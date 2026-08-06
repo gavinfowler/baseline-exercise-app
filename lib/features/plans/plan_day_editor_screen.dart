@@ -24,6 +24,7 @@ class PlanDayEditorScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(day.label)),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'plan-day-editor-fab',
         onPressed: () => _addBlock(context, ref, detail.value),
         icon: const Icon(Icons.add),
         label: const Text('Block'),

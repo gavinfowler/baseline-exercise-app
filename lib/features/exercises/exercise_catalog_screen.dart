@@ -51,6 +51,9 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // The shell keeps every tab mounted in an IndexedStack, so the tabs'
+        // buttons share one Hero subtree and cannot use the default tag.
+        heroTag: 'exercises-fab',
         onPressed: () => showExerciseEditor(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('New'),

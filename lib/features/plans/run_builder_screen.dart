@@ -64,6 +64,7 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'run-builder-fab',
         onPressed: _addSegment,
         icon: const Icon(Icons.add),
         label: const Text('Segment'),

@@ -52,6 +52,9 @@ class WorkoutScreen extends ConsumerWidget {
       floatingActionButton: active.value == null
           ? null
           : FloatingActionButton.extended(
+              // See the note in ExerciseCatalogScreen: tabs share a Hero
+              // subtree.
+              heroTag: 'workout-fab',
               onPressed: () => _addExercise(context, ref, active.value!.id),
               icon: const Icon(Icons.add),
               label: const Text('Exercise'),

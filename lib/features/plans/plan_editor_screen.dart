@@ -20,6 +20,7 @@ class PlanEditorScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(plan.name)),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'plan-editor-fab',
         onPressed: () => _addDay(context, ref, days.value?.length ?? 0),
         icon: const Icon(Icons.add),
         label: const Text('Day'),

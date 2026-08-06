@@ -31,6 +31,8 @@ class PlansScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // See the note in ExerciseCatalogScreen: tabs share a Hero subtree.
+        heroTag: 'plans-fab',
         onPressed: () => _createPlan(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('New plan'),
