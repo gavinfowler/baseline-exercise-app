@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://exercise-app.local/schema/exercise-plan-1.0.json",
+  "title": "Exercise Plan",
+  "description": "A training plan that can be uploaded into the Exercise Tracker app. Exercises are referenced by name, so a plan can be written without knowing anything about the user's device. Any exercise that does not already exist is created on import.",
+  "type": "object",
+  "required": ["schemaVersion", "plan"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of this plan format. Always \"1.0\"."
+    },
+    "plan": { "$ref": "#/$defs/plan" }
+  },
+
+  "$defs": {
+    "plan": {
+      "type": "object",
+      "required": ["name", "mode", "days"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Display name, e.g. \"Upper/Lower 4-Day\"."
+        },
+        "description": { "type": "string", "maxLength": 2000 },
+        "mode": {
+          "enum": ["static", "periodized"],
+          "description": "static: the same workout repeated indefinitely; beating the prescribed weight at the prescribed reps raises the plan's baseline. periodized: a fixed program over a date range; beating the prescription is recorded as a personal record but NEVER changes the plan."
+        },
+        "units": {
+          "enum": ["metric", "imperial"],
+          "default": "metric",
+          "description": "Units the numbers in this file are written in. Weights are kg (metric) or lb (imperial); distances are km or miles. Converted on import."
+        },
+        "scheduleType": {
+          "enum": ["weekly", "sequential"],
+          "default": "sequential",
+          "description": "weekly: days are pinned to weekdays. sequential: days rotate in order."
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO date (YYYY-MM-DD). Periodized plans only."
+        },
+        "durationWeeks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 104,
+          "description": "Program length. REQUIRED when mode is \"periodized\"."
+        },
+        "days": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 400,
+          "items": { "$ref": "#/$defs/day" }
+        }
+      }
+    },
+
+    "day": {
+      "type": "object",
+      "required": ["label", "blocks"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "e.g. \"Upper A\" or \"Week 1 - Legs\"."
+        },
+        "weekNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Which week this day belongs to. Periodized plans only."
+        },
+        "dayOfWeek": {
+          "enum": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ],
+          "description": "Only meaningful when scheduleType is \"weekly\"."
+        },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "blocks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": { "$ref": "#/$defs/block" }
+        }
+      }
+    },
+
+    "block": {
+      "type": "object",
+      "description": "A group of exercises performed together. A plain exercise is a block of kind \"single\" holding one exercise. `rounds` is what is usually called sets: 3 rounds of a single-exercise block is 3x8.",
+      "required": ["exercises"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": ["single", "superset", "circuit"],
+          "default": "single",
+          "description": "Use \"superset\" or \"circuit\" when the block holds two or more exercises performed back to back."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Optional marker such as \"A\" or \"B1\"."
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 1,
+          "description": "How many times through the block."
+        },
+        "restBetweenExercisesSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600,
+          "default": 0,
+          "description": "Rest between exercises inside a superset. Usually 0."
+        },
+        "restAfterRoundSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600,
+          "default": 90,
+          "description": "Rest after completing a full round."
+        },
+        "exercises": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/exercise" }
+        }
+      }
+    },
+
+    "exercise": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Matched case-insensitively against the user's catalog; created if absent. Prefer common names such as \"Barbell Bench Press\"."
+        },
+        "type": { "enum": ["strength", "cardio"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+
+        "reps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Strength only. Target repetitions per round."
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Strength only. In kg or lb per the plan's `units`. With weightMode \"baseline\", this is the STARTING weight used until the user establishes a heavier one."
+        },
+        "weightMode": {
+          "enum": ["absolute", "baseline", "baselinePlus", "baselinePercent"],
+          "default": "absolute",
+          "description": "absolute: always use `weight`. baseline: use the user's current baseline for this exercise at this rep count. baselinePlus: baseline + `weightOffset`. baselinePercent: `weightPercent`% of baseline. Baseline modes only progress in a static plan."
+        },
+        "weightOffset": {
+          "type": "number",
+          "description": "For weightMode \"baselinePlus\", in the plan's weight unit."
+        },
+        "weightPercent": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 300,
+          "description": "For weightMode \"baselinePercent\", where 85 means 85%."
+        },
+        "rpe": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Strength only. Rate of perceived exertion."
+        },
+        "tempo": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Strength only. Free-form, e.g. \"3-1-1\"."
+        },
+        "toFailure": { "type": "boolean", "default": false },
+
+        "activity": {
+          "enum": [
+            "run",
+            "walk",
+            "hike",
+            "cycle",
+            "row",
+            "swim",
+            "elliptical",
+            "stairs",
+            "other"
+          ],
+          "description": "Cardio only. Determines which metrics the app prompts for."
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Cardio only. Target duration."
+        },
+        "distance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Cardio only. In km or miles per the plan's `units`."
+        },
+        "targetPace": {
+          "type": "string",
+          "pattern": "^[0-9]{1,3}:[0-5][0-9]$",
+          "description": "Cardio only. Per km or per mile per `units`, as m:ss, e.g. \"5:30\". Supplying any two of durationSeconds, distance and targetPace determines the third."
+        },
+        "inclinePercent": { "type": "number", "minimum": -30, "maximum": 40 },
+        "resistanceLevel": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "intervals": {
+          "type": "array",
+          "maxItems": 100,
+          "description": "Cardio only. A structured workout — fartlek, interval repeats, tempo, pyramid — as an ordered list of segments. Each segment is one repeated work/recovery pair, so `6 × 400m hard with 200m jog` is a single entry with repeat 6. Stack a warm-up segment, the work, and a cool-down to describe a whole session. When intervals are present, the exercise's own durationSeconds/distance should be the TOTAL for the session.",
+          "items": {
+            "type": "object",
+            "required": ["repeat"],
+            "additionalProperties": false,
+            "anyOf": [
+              { "required": ["workSeconds"] },
+              { "required": ["workDistance"] }
+            ],
+            "properties": {
+              "repeat": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "description": "How many times this work/recovery pair is performed. Use 1 for a one-off block such as a warm-up."
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 60,
+                "description": "What to call this segment, e.g. \"Warm-up\", \"400 m repeats\", \"Surges\"."
+              },
+              "workSeconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7200,
+                "description": "How long each rep of the hard part lasts. Give this, workDistance, or both."
+              },
+              "workDistance": {
+                "type": "number",
+                "minimum": 0,
+                "description": "How far each rep of the hard part covers, in km or miles per the plan's `units`. A 400 m rep in a metric plan is 0.4."
+              },
+              "workPace": {
+                "type": "string",
+                "pattern": "^[0-9]{1,3}:[0-5][0-9]$",
+                "description": "Pace to hold during the hard part, as m:ss per km or per mile per `units`. Supplying any two of workSeconds, workDistance and workPace determines the third."
+              },
+              "restSeconds": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 7200,
+                "description": "How long the recovery between reps lasts. Omit for a segment with no recovery, such as a tempo block."
+              },
+              "recoveryDistance": {
+                "type": "number",
+                "minimum": 0,
+                "description": "How far the recovery covers, in the plan's distance unit."
+              },
+              "recoveryPace": {
+                "type": "string",
+                "pattern": "^[0-9]{1,3}:[0-5][0-9]$",
+                "description": "Pace for the recovery, as m:ss per the plan's distance unit."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

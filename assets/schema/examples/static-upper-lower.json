@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Upper/Lower 4-Day",
+    "description": "A repeating upper/lower split. Beat the prescribed reps at a heavier weight and the plan moves up with you.",
+    "mode": "static",
+    "units": "imperial",
+    "scheduleType": "sequential",
+    "days": [
+      {
+        "label": "Upper A",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 3,
+            "restAfterRoundSeconds": 150,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 5,
+                "weight": 185,
+                "weightMode": "baseline",
+                "rpe": 8
+              }
+            ]
+          },
+          {
+            "kind": "superset",
+            "label": "A",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 0,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Barbell Row",
+                "type": "strength",
+                "reps": 8,
+                "weight": 135,
+                "weightMode": "baseline"
+              },
+              {
+                "name": "Dumbbell Shoulder Press",
+                "type": "strength",
+                "reps": 10,
+                "weight": 45,
+                "weightMode": "baseline"
+              }
+            ]
+          },
+          {
+            "kind": "superset",
+            "label": "B",
+            "rounds": 3,
+            "restAfterRoundSeconds": 75,
+            "exercises": [
+              {
+                "name": "Barbell Curl",
+                "type": "strength",
+                "reps": 10,
+                "weight": 65,
+                "weightMode": "baseline"
+              },
+              {
+                "name": "Triceps Pushdown",
+                "type": "strength",
+                "reps": 12,
+                "weight": 50,
+                "weightMode": "baseline"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Lower A",
+        "blocks": [
+          {
+            "rounds": 4,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 245,
+                "weightMode": "baseline",
+                "tempo": "3-0-1"
+              }
+            ]
+          },
+          {
+            "rounds": 3,
+            "restAfterRoundSeconds": 150,
+            "exercises": [
+              {
+                "name": "Romanian Deadlift",
+                "type": "strength",
+                "reps": 8,
+                "weight": 185,
+                "weightMode": "baseline"
+              }
+            ]
+          },
+          {
+            "rounds": 3,
+            "restAfterRoundSeconds": 90,
+            "exercises": [
+              {
+                "name": "Leg Press",
+                "type": "strength",
+                "reps": 12,
+                "weightMode": "baselinePercent",
+                "weightPercent": 70,
+                "weight": 300
+              }
+            ]
+          },
+          {
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Stationary Bike",
+                "type": "cardio",
+                "activity": "cycle",
+                "durationSeconds": 600,
+                "resistanceLevel": 6,
+                "notes": "Easy cooldown"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

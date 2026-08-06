@@ -1,0 +1,338 @@
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../app/providers.dart';
+import '../../core/result.dart';
+import '../../core/units/unit_system.dart';
+import '../../domain/models/enums.dart';
+import '../../domain/models/run_segment.dart';
+import '../../domain/plan_import/plan_dto.dart';
+import '../../domain/plan_import/plan_parser.dart';
+
+/// Upload a plan file, see exactly what it will create, then commit it.
+///
+/// Nothing is written until the preview is confirmed, and a file with problems
+/// shows every one of them at once rather than one per attempt.
+class PlanImportScreen extends ConsumerStatefulWidget {
+  const PlanImportScreen({super.key});
+
+  @override
+  ConsumerState<PlanImportScreen> createState() => _PlanImportScreenState();
+}
+
+class _PlanImportScreenState extends ConsumerState<PlanImportScreen> {
+  PlanFileDto? _parsed;
+  List<ValidationIssue> _issues = const [];
+  String? _fileName;
+  bool _busy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Import a plan')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const _HowItWorks(),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _busy ? null : _pickFile,
+                  icon: const Icon(Icons.upload_file),
+                  label: const Text('Choose file'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _copySchema,
+                  icon: const Icon(Icons.copy_all),
+                  label: const Text('Copy format for AI'),
+                ),
+              ),
+            ],
+          ),
+          if (_fileName != null) ...[
+            const SizedBox(height: 16),
+            Text(_fileName!, style: Theme.of(context).textTheme.labelLarge),
+          ],
+          if (_issues.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _IssueList(issues: _issues),
+          ],
+          if (_parsed != null) ...[
+            const SizedBox(height: 16),
+            _Preview(plan: _parsed!.plan),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _busy ? null : _commit,
+              icon: const Icon(Icons.check),
+              label: Text('Import "${_parsed!.plan.name}"'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _copySchema() async {
+    final schema = await ref.read(planSchemaProvider.future);
+    // A short preamble makes the paste self-contained: the model gets the
+    // contract and the instruction in one go.
+    final payload =
+        '''
+Write me a training plan as a single JSON document that validates against the
+JSON Schema below. Reply with only the JSON — no commentary, no code fences.
+
+Notes that matter:
+- "mode": "static" means the plan raises its own weights as I get stronger.
+  "mode": "periodized" means the prescribed numbers stay fixed for the program.
+- Reference exercises by their common name; they do not need to exist yet.
+- Put two or more exercises in one block with "kind": "superset" to superset them.
+
+$schema
+''';
+
+    await Clipboard.setData(ClipboardData(text: payload));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Format copied. Paste it into any AI chat tool.'),
+      ),
+    );
+  }
+
+  Future<void> _pickFile() async {
+    const typeGroup = XTypeGroup(label: 'Plan files', extensions: ['json']);
+    final file = await openFile(acceptedTypeGroups: [typeGroup]);
+    if (file == null) return;
+
+    setState(() => _busy = true);
+    try {
+      final source = await File(file.path).readAsString();
+      final result = const PlanParser().parse(source);
+
+      setState(() {
+        _fileName = file.name;
+        _parsed = result.valueOrNull;
+        _issues = result.issues;
+      });
+    } on FileSystemException catch (e) {
+      setState(() {
+        _fileName = file.name;
+        _parsed = null;
+        _issues = [
+          ValidationIssue(
+            pointer: '',
+            message: 'Could not read the file: ${e.message}',
+          ),
+        ];
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _commit() async {
+    final parsed = _parsed;
+    if (parsed == null) return;
+
+    setState(() => _busy = true);
+    final summary = await ref.read(planImporterProvider).import(parsed);
+    if (!mounted) return;
+
+    setState(() => _busy = false);
+
+    final created = summary.createdExerciseNames;
+    final message = StringBuffer(
+      'Imported "${summary.planName}" — ${summary.dayCount} days, '
+      '${summary.exerciseCount} exercises.',
+    );
+    if (created.isNotEmpty) {
+      message.write(
+        '\nAdded ${created.length} new exercise'
+        '${created.length == 1 ? '' : 's'} to your catalog.',
+      );
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message.toString())));
+    Navigator.of(context).pop();
+  }
+}
+
+class _HowItWorks extends StatelessWidget {
+  const _HowItWorks();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Have an AI write your plan',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tap "Copy format for AI" and paste it into any chat tool along '
+              'with what you want to train. Save the JSON it gives back, then '
+              'choose it here. Nothing is added until you confirm the preview.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IssueList extends StatelessWidget {
+  const _IssueList({required this.issues});
+
+  final List<ValidationIssue> issues;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final errors = issues.where((i) => i.isError).toList();
+    final warnings = issues.where((i) => !i.isError).toList();
+
+    return Card(
+      color: errors.isEmpty
+          ? theme.colorScheme.surfaceContainerHighest
+          : theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              errors.isEmpty
+                  ? '${warnings.length} thing${warnings.length == 1 ? '' : 's'} to check'
+                  : "${errors.length} problem${errors.length == 1 ? '' : 's'} — nothing was imported",
+              style: theme.textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            for (final issue in issues)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // The pointer is what makes a generated file fixable: it
+                    // names the exact node that is wrong.
+                    Text(
+                      issue.location,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    Text(issue.message, style: theme.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Preview extends StatelessWidget {
+  const _Preview({required this.plan});
+
+  final PlanDto plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isStatic = plan.mode == PlanMode.staticPlan;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(plan.name, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              isStatic
+                  ? 'Static plan — beating the prescribed reps at a heavier '
+                        'weight raises the target.'
+                  : 'Periodized plan over ${plan.durationWeeks} weeks — the '
+                        'prescribed numbers will not change.',
+              style: theme.textTheme.bodySmall,
+            ),
+            const Divider(height: 24),
+            for (final day in plan.days) ...[
+              Text(day.label, style: theme.textTheme.titleSmall),
+              for (final block in day.blocks)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (block.kind.isGrouped)
+                        Text(
+                          '${block.kind.label}'
+                          '${block.label == null ? '' : ' ${block.label}'}'
+                          ' — ${block.rounds} rounds',
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      for (final exercise in block.exercises)
+                        Text(
+                          '· ${exercise.name}'
+                          '${_prescription(exercise, block.rounds)}',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Renders in metric, matching how the values are stored. The rest of the app
+  /// converts for display; this preview deliberately shows what will be saved.
+  String _prescription(PlanExerciseDto exercise, int rounds) {
+    if (exercise.isStrength) {
+      final parts = <String>[
+        if (exercise.reps != null) '$rounds × ${exercise.reps}',
+        if (exercise.weightKg != null)
+          '${exercise.weightKg!.toStringAsFixed(1)} kg',
+        if (exercise.weightMode != WeightMode.absolute)
+          '(${exercise.weightMode.wireName})',
+      ];
+      return parts.isEmpty ? '' : '  ${parts.join(' ')}';
+    }
+
+    final workout = RunWorkout.decode(exercise.intervalsJson);
+    final parts = <String>[
+      if (exercise.durationSeconds != null)
+        '${(exercise.durationSeconds! / 60).round()} min',
+      if (exercise.distanceMeters != null)
+        '${(exercise.distanceMeters! / 1000).toStringAsFixed(2)} km',
+      if (exercise.paceSecPerKm != null)
+        '@ ${UnitFormatter.formatDuration(exercise.paceSecPerKm!.round())} /km',
+      if (workout.isNotEmpty)
+        '(${workout.segments.length} segment'
+            '${workout.segments.length == 1 ? '' : 's'})',
+    ];
+    return parts.isEmpty ? '' : '  ${parts.join(' · ')}';
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Speed Work",
+    "description": "Three structured running sessions repeated week to week. Every session is built from segments: a warm-up, the work, and a cool-down. Paces are written per mile because this plan uses imperial units.",
+    "mode": "static",
+    "units": "imperial",
+    "scheduleType": "sequential",
+    "days": [
+      {
+        "label": "Interval Repeats",
+        "notes": "Classic track session. Hold the same pace on every rep rather than starting fast.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2760,
+                "distance": 4.5,
+                "notes": "6 x 400m at 5K effort with an equal jog recovery.",
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:00"
+                  },
+                  {
+                    "label": "400 m repeats",
+                    "repeat": 6,
+                    "workDistance": 0.25,
+                    "workPace": "7:00",
+                    "recoveryDistance": 0.25,
+                    "recoveryPace": "11:00"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:30"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Fartlek",
+        "notes": "Speed play — unstructured in spirit, but written down so it is repeatable.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2640,
+                "notes": "8 surges of a minute, floating between them.",
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:00"
+                  },
+                  {
+                    "label": "Surges",
+                    "repeat": 8,
+                    "workSeconds": 60,
+                    "workPace": "6:45",
+                    "restSeconds": 120,
+                    "recoveryPace": "10:30"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:30"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Tempo",
+        "notes": "Comfortably hard, held unbroken. No recovery inside the tempo block.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2400,
+                "distance": 4.6,
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:00"
+                  },
+                  {
+                    "label": "Tempo",
+                    "repeat": 1,
+                    "workSeconds": 1200,
+                    "workPace": "8:00"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "10:30"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

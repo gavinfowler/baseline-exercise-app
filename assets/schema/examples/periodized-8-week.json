@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "8-Week Base Build",
+    "description": "A fixed eight-week block. The prescribed numbers never change, even if you beat them — over-performance is recorded as a personal record instead.",
+    "mode": "periodized",
+    "units": "metric",
+    "scheduleType": "weekly",
+    "startDate": "2026-08-03",
+    "durationWeeks": 8,
+    "days": [
+      {
+        "label": "Week 1 - Strength",
+        "weekNumber": 1,
+        "dayOfWeek": "monday",
+        "blocks": [
+          {
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 100,
+                "weightMode": "absolute",
+                "rpe": 7
+              }
+            ]
+          },
+          {
+            "rounds": 3,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Overhead Press",
+                "type": "strength",
+                "reps": 8,
+                "weight": 45,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 1 - Intervals",
+        "weekNumber": 1,
+        "dayOfWeek": "wednesday",
+        "blocks": [
+          {
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2400,
+                "distance": 6.0,
+                "targetPace": "5:30",
+                "intervals": [
+                  {
+                    "repeat": 6,
+                    "workSeconds": 60,
+                    "restSeconds": 90,
+                    "label": "hard"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 2 - Strength",
+        "weekNumber": 2,
+        "dayOfWeek": "monday",
+        "blocks": [
+          {
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 105,
+                "weightMode": "absolute",
+                "rpe": 7.5
+              }
+            ]
+          },
+          {
+            "rounds": 3,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Overhead Press",
+                "type": "strength",
+                "reps": 8,
+                "weight": 47.5,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
