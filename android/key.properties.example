@@ -2,10 +2,11 @@
 # template is not.
 #
 # Generate the upload keystore first — keep it OUTSIDE the repository so it can
-# never be committed by accident:
+# never be committed by accident. Let keytool default to PKCS12; forcing the
+# older JKS type only earns a deprecation warning.
 #
-#   keytool -genkey -v -keystore %USERPROFILE%\baseline-upload-keystore.jks ^
-#     -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#   keytool -genkeypair -v -alias upload -keyalg RSA -keysize 2048 ^
+#     -validity 10000 -keystore %USERPROFILE%\baseline-upload-keystore.jks
 #
 # Back the .jks file and these passwords up somewhere durable. If you lose the
 # upload key you cannot publish an update under this app's identity without

@@ -22,8 +22,8 @@ if (-not (Test-Path 'android/key.properties')) {
     Write-Host ""
     Write-Host "  1. Create the keystore, OUTSIDE this repository:"
     Write-Host ""
-    Write-Host '       keytool -genkey -v -alias upload -keyalg RSA -keysize 2048 \'
-    Write-Host '         -validity 10000 -storetype JKS \'
+    Write-Host '       keytool -genkeypair -v -alias upload -keyalg RSA -keysize 2048 `'
+    Write-Host '         -validity 10000 `'
     Write-Host '         -keystore $env:USERPROFILE\baseline-upload-keystore.jks'
     Write-Host ""
     Write-Host "  2. Copy android/key.properties.example to android/key.properties"
