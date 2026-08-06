@@ -1,0 +1,20 @@
+# Copy to `android/key.properties` and fill in. That file is gitignored; this
+# template is not.
+#
+# Generate the upload keystore first — keep it OUTSIDE the repository so it can
+# never be committed by accident:
+#
+#   keytool -genkey -v -keystore %USERPROFILE%\baseline-upload-keystore.jks ^
+#     -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Back the .jks file and these passwords up somewhere durable. If you lose the
+# upload key you cannot publish an update under this app's identity without
+# asking Google to reset it.
+
+storePassword=<the password you chose for the keystore>
+keyPassword=<the password you chose for the key, often the same>
+keyAlias=upload
+
+# Absolute path, or relative to the `android/` directory. An absolute path
+# outside the repo is the safer choice.
+storeFile=C:/Users/<you>/baseline-upload-keystore.jks

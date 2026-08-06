@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baseline — offline training tracker</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 5rem;
+    color: #16211c; background: #fbfdfb;
+  }
+  header { display: flex; align-items: center; gap: 1.15rem; margin-bottom: .5rem; }
+  h1 { font-size: 2.25rem; margin: 0; letter-spacing: -.03em; }
+  .tagline { color: #2F6F4E; font-size: 1.05rem; margin: 0 0 2.25rem; }
+  h2 { font-size: 1.15rem; margin: 2.25rem 0 .5rem; letter-spacing: -.01em; }
+  ul { padding-left: 1.25rem; }
+  li { margin: .4rem 0; }
+  a { color: #2F6F4E; }
+  .modes { border-collapse: collapse; width: 100%; margin: .75rem 0; }
+  .modes th, .modes td {
+    text-align: left; padding: .6rem .75rem; border-bottom: 1px solid #dde7e2;
+    vertical-align: top;
+  }
+  .modes th { width: 8.5rem; }
+  footer {
+    margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid #dde7e2;
+    color: #5c6b64; font-size: .9rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #dfe8e3; background: #0F2B20; }
+    a, .tagline { color: #6EE7A8; }
+    .modes th, .modes td, footer { border-color: #1e4635; }
+    footer { color: #9db3a8; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <svg width="72" height="72" viewBox="0 0 100 100" aria-hidden="true">
+    <rect width="100" height="100" rx="22" fill="#0F2B20"/>
+    <g>
+      <rect x="18.2" y="56.6" width="9.8" height="10.5" rx="1.8" fill="#3E8F66"/>
+      <rect x="31.7" y="49.0" width="9.8" height="18.1" rx="1.8" fill="#4BA679"/>
+      <rect x="45.1" y="41.3" width="9.8" height="25.8" rx="1.8" fill="#59BE8B"/>
+      <rect x="58.5" y="33.7" width="9.8" height="33.4" rx="1.8" fill="#64D59E"/>
+      <rect x="72.0" y="26.1" width="9.8" height="41.0" rx="1.8" fill="#6EE7A8"/>
+      <rect x="14.5" y="70.5" width="71" height="5.8" rx="2.9" fill="#F4F7F3"/>
+    </g>
+  </svg>
+  <h1>Baseline</h1>
+</header>
+<p class="tagline">Train offline. Your data stays yours.</p>
+
+<p>
+  A tracker for cardio and strength training that runs entirely on your device.
+  No account, no sync, no ads, and no internet permission.
+</p>
+
+<h2>Two ways to plan</h2>
+<table class="modes">
+  <tr>
+    <th>Static</th>
+    <td>The plan's baseline <strong>rises</strong>. Complete the prescribed reps
+        at a heavier weight and that becomes the new target.</td>
+  </tr>
+  <tr>
+    <th>Periodized</th>
+    <td>The plan <strong>does not change</strong>. Beating it is recorded as a
+        personal record, but the prescribed numbers stand for the whole
+        program.</td>
+  </tr>
+</table>
+
+<h2>What else it does</h2>
+<ul>
+  <li>Strength sets, supersets and circuits, with a rest timer that starts
+      itself.</li>
+  <li>Cardio with duration, distance and pace — enter any two and the third
+      works itself out.</li>
+  <li>Structured runs: fartlek, interval repeats, tempo blocks and pyramids,
+      each segment with its own pace.</li>
+  <li>Plans built in the app, or written as JSON — the format is published so
+      an AI tool can generate one you can import.</li>
+  <li>History, progress charts, personal records, and full backup and
+      restore.</li>
+</ul>
+
+<h2>Privacy</h2>
+<p>
+  Baseline collects nothing at all. See the
+  <a href="privacy-policy.html">privacy policy</a>.
+</p>
+
+<footer>
+  <a href="https://github.com/gavinfowler/baseline-exercise-app">Source on
+  GitHub</a>
+</footer>
+
+</body>
+</html>

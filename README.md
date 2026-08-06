@@ -138,10 +138,51 @@ flutter test tool/generate_icons.dart
 ```
 
 That rewrites the Android mipmaps (legacy, adaptive foreground and monochrome),
-`windows/runner/resources/app_icon.ico`, and the PNGs in `assets/branding/`.
+`windows/runner/resources/app_icon.ico`, the Play Store feature graphic, and the
+PNGs in `assets/branding/`. The feature graphic needs real type, so it loads
+Roboto out of the Flutter SDK — `flutter test` otherwise renders text as solid
+boxes, and it will skip the wording rather than emit that.
 It lives in `tool/` rather than `test/` so the normal suite never rewrites
 binaries; `assets/branding/` is deliberately **not** in the pubspec's asset list,
 since those PNGs are for store listings rather than for the app to load.
+
+## Releasing to Google Play
+
+```powershell
+.\tool\build_release.ps1
+```
+
+Runs every quality gate, then builds a signed, obfuscated `.aab` with its debug
+symbols split out. It refuses to build at all without an upload key, rather than
+producing a debug-signed bundle the Play Console would reject on upload.
+
+**Signing.** Create the keystore *outside* this repository, then copy
+`android/key.properties.example` to `android/key.properties` and fill it in.
+Both `key.properties` and `*.jks` are gitignored. Without them the release build
+falls back to the debug key so `flutter run --release` still works for a fresh
+clone, and Gradle warns loudly when it does.
+
+Back up the keystore and its passwords. The upload key is the app's identity —
+losing it means asking Google to reset it before you can ship an update.
+
+**Store assets** in `assets/branding/`: `baseline-icon-512.png` is the 512x512
+listing icon, `feature-graphic-1024x500.png` the banner. Screenshots are easiest
+to capture from the Windows build at a phone aspect ratio.
+
+**The privacy policy** lives in `docs/` as plain HTML, ready to serve from
+GitHub Pages (Settings, Pages, deploy from `main` and the `/docs` folder). Play
+requires a policy URL even for an app that collects nothing. One `TODO` is left
+in it: the contact address to publish.
+
+**Before the first upload**, two things need a decision rather than code:
+
+- **`USE_EXACT_ALARM` is Play-restricted** to apps whose core function is an
+  alarm, timer or calendar. The rest timer is a defensible case, but it needs a
+  declaration in the Console and may be challenged. The fallback is to drop it
+  and keep `SCHEDULE_EXACT_ALARM`, which the user grants from Settings; only
+  the background alert degrades.
+- **Bump the `+N` in `version:`** for every upload. Play rejects a versionCode
+  it has already accepted.
 
 ## Project layout
 

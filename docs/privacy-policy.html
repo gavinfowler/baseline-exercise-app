@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Baseline</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem;
+    color: #16211c; background: #fbfdfb;
+  }
+  h1 { font-size: 2rem; margin: 0 0 .25rem; letter-spacing: -.02em; }
+  h2 { font-size: 1.15rem; margin: 2.25rem 0 .5rem; letter-spacing: -.01em; }
+  .updated { color: #5c6b64; margin: 0 0 2rem; font-size: .9rem; }
+  .lede {
+    background: #edf6f1; border-left: 3px solid #2F6F4E;
+    padding: 1rem 1.15rem; border-radius: 0 6px 6px 0; margin: 0 0 2rem;
+  }
+  ul { padding-left: 1.25rem; }
+  li { margin: .35rem 0; }
+  a { color: #2F6F4E; }
+  code {
+    background: #edf6f1; padding: .15em .4em; border-radius: 4px;
+    font-size: .9em;
+  }
+  footer {
+    margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid #dde7e2;
+    color: #5c6b64; font-size: .9rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #dfe8e3; background: #0F2B20; }
+    .lede { background: #16382a; border-left-color: #6EE7A8; }
+    code { background: #16382a; }
+    a { color: #6EE7A8; }
+    .updated, footer { color: #9db3a8; }
+    footer { border-top-color: #1e4635; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Privacy Policy</h1>
+<p class="updated">Baseline · Last updated 5 August 2026</p>
+
+<p class="lede">
+  <strong>Baseline collects nothing.</strong> It has no accounts, no analytics,
+  no advertising, and no servers. Everything you record stays on your device.
+  The released Android app does not even hold the <code>INTERNET</code>
+  permission, so it is not technically capable of transmitting your data
+  anywhere.
+</p>
+
+<h2>What the app stores</h2>
+<p>
+  Baseline keeps your training data — exercises, workouts, sets, cardio efforts,
+  plans, personal records and settings — in a database in the app's own private
+  storage on your device. On Android, that area is accessible only to Baseline,
+  and Android removes it when you uninstall the app.
+</p>
+
+<h2>What the app sends</h2>
+<p>
+  Nothing. There is no network code in Baseline, no third-party SDK, no crash
+  reporter and no telemetry. You can verify this yourself: the app's release
+  build declares no internet permission, which you can inspect in the Play
+  Store listing under <em>App permissions</em>, and the source is public.
+</p>
+
+<h2>Permissions, and why they exist</h2>
+<ul>
+  <li><strong>Notifications</strong> — to show the rest timer alert when you
+      have switched away from the app. Declining only means rest alerts stay
+      inside the app; nothing else changes.</li>
+  <li><strong>Vibration</strong> — to buzz when a rest timer finishes.</li>
+  <li><strong>Alarms and reminders</strong> — so a rest timer fires at the
+      moment it is due rather than whenever the system next batches background
+      work.</li>
+  <li><strong>Run at startup</strong> — to restore a pending rest alert after
+      the device reboots.</li>
+</ul>
+<p>None of these involve the network, your location, your contacts, your
+  camera, or your microphone. Baseline requests no such access.</p>
+
+<h2>Files you choose to open or save</h2>
+<p>
+  Baseline can import a training plan from a file you select, and can export a
+  backup of your data to a location you choose. These actions happen only when
+  you start them, and only with the file you pick. A backup you export is an
+  ordinary file on your device: if you later move it to a cloud drive or send it
+  to someone, that is your decision and it leaves this policy's scope.
+</p>
+
+<h2>Your data, and deleting it</h2>
+<p>
+  Because nothing is transmitted, there is no account to close and no copy of
+  your data for anyone to hold. You can delete individual records inside the
+  app, and uninstalling Baseline removes the database along with it. Export a
+  backup first if you want to keep your history.
+</p>
+
+<h2>Children</h2>
+<p>
+  Baseline is a general-audience fitness tool. It collects no personal
+  information from anyone, of any age.
+</p>
+
+<h2>Changes to this policy</h2>
+<p>
+  If a future version of Baseline ever handles data differently, this page will
+  be updated before that version is released, and the date at the top will
+  change.
+</p>
+
+<h2>Contact</h2>
+<p>
+  Questions about this policy can go to
+  <!-- TODO: replace with the address you want published. -->
+  <strong>&lt;your contact email&gt;</strong>, or to the
+  <a href="https://github.com/gavinfowler/baseline-exercise-app/issues">issue
+  tracker</a>.
+</p>
+
+<footer>
+  Baseline is open source —
+  <a href="https://github.com/gavinfowler/baseline-exercise-app">view the
+  source on GitHub</a>.
+</footer>
+
+</body>
+</html>

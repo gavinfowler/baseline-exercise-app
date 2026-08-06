@@ -50,3 +50,10 @@ app.*.map.json
 
 # Coverage
 coverage/
+
+# Play Store signing. The upload key is the app's identity: anyone holding it
+# can publish an update as you, and losing it means asking Google to reset it.
+# It must never be committed, on a public repo or a private one.
+key.properties
+*.jks
+*.keystore
