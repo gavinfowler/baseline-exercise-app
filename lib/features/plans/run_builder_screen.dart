@@ -78,7 +78,7 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.only(bottom: 96),
                     itemCount: _segments.length,
-                    onReorder: _reorder,
+                    onReorderItem: _reorder,
                     itemBuilder: (context, i) => _SegmentCard(
                       key: ValueKey(i),
                       index: i,
@@ -114,12 +114,12 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
     );
   }
 
+  /// Unlike the older `onReorder`, `onReorderItem` reports the index the
+  /// segment should land on *after* its removal, so there is nothing to adjust.
   void _reorder(int oldIndex, int newIndex) {
     setState(() {
-      // ReorderableListView reports the target index before the removal.
-      final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
       final moved = _segments.removeAt(oldIndex);
-      _segments.insert(target, moved);
+      _segments.insert(newIndex, moved);
     });
   }
 
