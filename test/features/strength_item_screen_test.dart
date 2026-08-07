@@ -1,7 +1,7 @@
 import 'package:exercise_app/core/units/unit_system.dart';
 import 'package:exercise_app/data/db/app_database.dart';
 import 'package:exercise_app/domain/models/enums.dart';
-import 'package:exercise_app/features/plans/plan_item_editor_sheet.dart';
+import 'package:exercise_app/features/plans/strength_item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -41,20 +41,23 @@ void main() {
 
   /// Opens the editor the way the plan day editor does, and holds whatever it
   /// returns when saved.
-  Future<List<PlanItemResult?>> openOn(
+  Future<List<StrengthItemResult?>> openOn(
     WidgetTester tester,
     PlanItemRow existing, {
     UnitFormatter formatter = metric,
     PlanMode planMode = PlanMode.staticPlan,
   }) async {
-    final results = <PlanItemResult?>[];
+    final results = <StrengthItemResult?>[];
     await tester.pumpWidget(
       MaterialApp(
+        // Material 3's InkSparkle needs a fragment shader the widget-test
+        // environment cannot compile.
+        theme: ThemeData(splashFactory: InkRipple.splashFactory),
         home: Scaffold(
           body: Builder(
             builder: (context) => ElevatedButton(
               onPressed: () async => results.add(
-                await showPlanItemEditor(
+                await showStrengthItemEditor(
                   context,
                   exercise: exercise(),
                   planMode: planMode,
@@ -109,6 +112,13 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(DropdownButtonFormField<WeightMode>), findsNothing);
+    });
+
+    testWidgets('names the exercise and marks it as strength', (tester) async {
+      await openOn(tester, item(weightMode: WeightMode.baseline));
+
+      expect(find.text('Barbell Bench Press'), findsOneWidget);
+      expect(find.text('Strength'), findsOneWidget);
     });
   });
 

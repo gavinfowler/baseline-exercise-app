@@ -8,7 +8,9 @@ import '../../data/repositories/plan_repository.dart';
 import '../../domain/models/enums.dart';
 import '../../domain/models/run_segment.dart';
 import '../session/exercise_picker.dart';
-import 'plan_item_editor_sheet.dart';
+import '../session/exercise_type_picker.dart';
+import 'cardio_item_screen.dart';
+import 'strength_item_screen.dart';
 
 /// Edits one day of a plan: its blocks, and the exercises inside them.
 class PlanDayEditorScreen extends ConsumerWidget {
@@ -132,10 +134,12 @@ class _BlockCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    block.block.kind.label,
-                    style: theme.textTheme.titleSmall,
-                  ),
+                  child: Text(switch (_blockType(byId)) {
+                    ExerciseType.cardio => '${block.block.kind.label} · Cardio',
+                    ExerciseType.strength =>
+                      '${block.block.kind.label} · Strength',
+                    null => block.block.kind.label,
+                  }, style: theme.textTheme.titleSmall),
                 ),
                 IconButton(
                   tooltip: 'Delete block',
@@ -165,8 +169,16 @@ class _BlockCard extends ConsumerWidget {
                 ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    iconForExerciseType(
+                      byId[item.exerciseId]?.type ?? ExerciseType.strength,
+                    ),
+                    size: 20,
+                  ),
                   title: Text(byId[item.exerciseId]?.name ?? 'Exercise'),
-                  subtitle: Text(_describe(item, formatter)),
+                  subtitle: Text(
+                    _describe(item, byId[item.exerciseId]?.type, formatter),
+                  ),
                   trailing: IconButton(
                     tooltip: 'Remove',
                     icon: const Icon(Icons.close),
@@ -207,54 +219,92 @@ class _BlockCard extends ConsumerWidget {
     );
   }
 
-  String _describe(PlanItemRow item, UnitFormatter formatter) {
-    if (item.targetReps != null || item.targetWeightKg != null) {
-      final parts = <String>[
-        if (item.targetReps != null) '${item.targetReps} reps',
-        if (item.weightMode == WeightMode.baseline)
-          'at your current baseline'
-        else if (item.weightMode == WeightMode.baselinePercent)
-          '${item.weightPercent?.round()}% of baseline'
-        else if (item.weightMode == WeightMode.baselinePlus)
-          'baseline + ${formatter.formatWeight(item.weightOffsetKg ?? 0)}'
-        else if (item.targetWeightKg != null)
-          formatter.formatWeight(item.targetWeightKg!),
-      ];
-      return parts.join(' · ');
-    }
+  /// Summarises one item.
+  ///
+  /// Driven by the exercise's own type rather than by which columns happen to be
+  /// non-null. Sniffing nullability sent an unprescribed strength item down the
+  /// cardio branch, where it was described in terms that never applied to it.
+  String _describe(
+    PlanItemRow item,
+    ExerciseType? type,
+    UnitFormatter formatter,
+  ) {
+    if (type == ExerciseType.cardio) {
+      // A structured workout describes itself; its totals are already mirrored
+      // onto the target fields, so showing both would just repeat.
+      final workout = RunWorkout.decode(item.intervalsJson);
+      if (workout.isNotEmpty) {
+        return 'Structured · ${workout.describe(formatter)}';
+      }
 
-    // A structured workout describes itself; its totals are already mirrored
-    // onto the target fields, so showing both would just repeat.
-    final workout = RunWorkout.decode(item.intervalsJson);
-    if (workout.isNotEmpty) {
-      return 'Structured · ${workout.describe(formatter)}';
+      final parts = <String>[
+        if (item.targetDurationSeconds != null)
+          UnitFormatter.formatDuration(item.targetDurationSeconds!),
+        if (item.targetDistanceMeters != null)
+          formatter.formatDistance(item.targetDistanceMeters!),
+        if (item.targetPaceSecPerKm != null)
+          formatter.formatPace(item.targetPaceSecPerKm!),
+        if (item.targetInclinePercent != null)
+          '${_trimZeros(item.targetInclinePercent!)}% incline',
+        if (item.targetResistanceLevel != null)
+          'level ${item.targetResistanceLevel}',
+      ];
+      return parts.isEmpty ? 'No prescription set' : parts.join(' · ');
     }
 
     final parts = <String>[
-      if (item.targetDurationSeconds != null)
-        UnitFormatter.formatDuration(item.targetDurationSeconds!),
-      if (item.targetDistanceMeters != null)
-        formatter.formatDistance(item.targetDistanceMeters!),
-      if (item.targetPaceSecPerKm != null)
-        formatter.formatPace(item.targetPaceSecPerKm!),
+      if (item.targetReps != null) '${item.targetReps} reps',
+      if (item.weightMode == WeightMode.baseline)
+        'at your current baseline'
+      else if (item.weightMode == WeightMode.baselinePercent)
+        '${item.weightPercent?.round()}% of baseline'
+      else if (item.weightMode == WeightMode.baselinePlus)
+        'baseline + ${formatter.formatWeight(item.weightOffsetKg ?? 0)}'
+      else if (item.targetWeightKg != null)
+        formatter.formatWeight(item.targetWeightKg!),
     ];
     return parts.isEmpty ? 'No prescription set' : parts.join(' · ');
   }
 
+  static String _trimZeros(double value) {
+    final fixed = value.toStringAsFixed(1);
+    return fixed.endsWith('.0') ? fixed.substring(0, fixed.length - 2) : fixed;
+  }
+
+  /// The discipline this block is already committed to, or null while it is
+  /// still empty.
+  ///
+  /// A block is performed as one unit — rounds of it, back to back — so mixing a
+  /// bench press and a treadmill run inside one was never coherent. The first
+  /// exercise added settles it, and everything after is filtered to match.
+  ExerciseType? _blockType(Map<int, ExerciseRow> byId) {
+    for (final item in block.items) {
+      final type = byId[item.exerciseId]?.type;
+      if (type != null) return type;
+    }
+    return null;
+  }
+
   Future<void> _addExercise(BuildContext context, WidgetRef ref) async {
-    final exercise = await pickExercise(context);
+    final locked = _blockType(ref.read(exercisesByIdProvider));
+
+    final type = locked ?? await pickExerciseType(context);
+    if (type == null || !context.mounted) return;
+
+    final exercise = await pickExercise(context, type: type);
     if (exercise == null || !context.mounted) return;
 
-    final result = await showPlanItemEditor(
-      context,
-      exercise: exercise,
-      planMode: plan.mode,
-      formatter: ref.read(unitFormatterProvider),
-    );
-    if (result == null) return;
-
     final repo = ref.read(planRepositoryProvider);
-    if (exercise.type == ExerciseType.cardio) {
+    final formatter = ref.read(unitFormatterProvider);
+
+    if (type == ExerciseType.cardio) {
+      final result = await showCardioItemEditor(
+        context,
+        exercise: exercise,
+        formatter: formatter,
+      );
+      if (result == null) return;
+
       await repo.addCardioItem(
         planBlockId: block.block.id,
         exerciseId: exercise.id,
@@ -262,9 +312,19 @@ class _BlockCard extends ConsumerWidget {
         targetDurationSeconds: result.durationSeconds,
         targetDistanceMeters: result.distanceMeters,
         targetPaceSecPerKm: result.paceSecPerKm,
+        targetInclinePercent: result.inclinePercent,
+        targetResistanceLevel: result.resistanceLevel,
         intervalsJson: result.intervalsJson,
       );
     } else {
+      final result = await showStrengthItemEditor(
+        context,
+        exercise: exercise,
+        planMode: plan.mode,
+        formatter: formatter,
+      );
+      if (result == null) return;
+
       await repo.addStrengthItem(
         planBlockId: block.block.id,
         exerciseId: exercise.id,
@@ -289,18 +349,19 @@ class _BlockCard extends ConsumerWidget {
     final exercise = ref.read(exercisesByIdProvider)[item.exerciseId];
     if (exercise == null) return;
 
-    final result = await showPlanItemEditor(
-      context,
-      exercise: exercise,
-      planMode: plan.mode,
-      formatter: ref.read(unitFormatterProvider),
-      existing: item,
-    );
-    if (result == null) return;
-
     final repo = ref.read(planRepositoryProvider);
-    await repo.deleteItem(item.id);
+    final formatter = ref.read(unitFormatterProvider);
+
     if (exercise.type == ExerciseType.cardio) {
+      final result = await showCardioItemEditor(
+        context,
+        exercise: exercise,
+        formatter: formatter,
+        existing: item,
+      );
+      if (result == null) return;
+
+      await repo.deleteItem(item.id);
       await repo.addCardioItem(
         planBlockId: block.block.id,
         exerciseId: exercise.id,
@@ -308,9 +369,21 @@ class _BlockCard extends ConsumerWidget {
         targetDurationSeconds: result.durationSeconds,
         targetDistanceMeters: result.distanceMeters,
         targetPaceSecPerKm: result.paceSecPerKm,
+        targetInclinePercent: result.inclinePercent,
+        targetResistanceLevel: result.resistanceLevel,
         intervalsJson: result.intervalsJson,
       );
     } else {
+      final result = await showStrengthItemEditor(
+        context,
+        exercise: exercise,
+        planMode: plan.mode,
+        formatter: formatter,
+        existing: item,
+      );
+      if (result == null) return;
+
+      await repo.deleteItem(item.id);
       await repo.addStrengthItem(
         planBlockId: block.block.id,
         exerciseId: exercise.id,

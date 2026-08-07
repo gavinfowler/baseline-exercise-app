@@ -11,6 +11,10 @@ void main() {
     final reported = <String?>[];
     await tester.pumpWidget(
       MaterialApp(
+        // Material 3's default InkSparkle loads a fragment shader the widget
+        // test environment cannot compile, which fails the first test to tap
+        // anything. The ripple looks the same here and needs no shader.
+        theme: ThemeData(splashFactory: InkRipple.splashFactory),
         home: Scaffold(
           body: VocabularyField(
             label: 'Equipment',

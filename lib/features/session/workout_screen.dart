@@ -14,6 +14,7 @@ import '../rest_timer/rest_timer_bar.dart';
 import '../rest_timer/rest_timer_controller.dart';
 import '../shell/app_drawer.dart';
 import 'exercise_picker.dart';
+import 'exercise_type_picker.dart';
 import 'set_entry_dialog.dart';
 
 /// The workout tab: start a session, log strength sets and cardio, finish.
@@ -64,20 +65,27 @@ class WorkoutScreen extends ConsumerWidget {
     );
   }
 
-  /// Adds any exercise to the session. Cardio and strength create different
-  /// kinds of entry, so the picker is unfiltered and the type decides.
+  /// Adds an exercise to the session.
+  ///
+  /// The discipline is chosen first and then filters the picker, rather than
+  /// being inferred from whichever exercise was tapped. Cardio and strength
+  /// create entirely different kinds of entry, and the user should be the one
+  /// deciding which.
   Future<void> _addExercise(
     BuildContext context,
     WidgetRef ref,
     int sessionId,
   ) async {
-    final exercise = await pickExercise(context);
+    final type = await pickExerciseType(context);
+    if (type == null || !context.mounted) return;
+
+    final exercise = await pickExercise(context, type: type);
     if (exercise == null) return;
 
     final repo = ref.read(sessionRepositoryProvider);
     final groupIndex = await repo.nextGroupIndex(sessionId);
 
-    if (exercise.type == ExerciseType.cardio) {
+    if (type == ExerciseType.cardio) {
       await repo.addCardioEntry(
         sessionId: sessionId,
         exerciseId: exercise.id,
