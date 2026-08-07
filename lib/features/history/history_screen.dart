@@ -7,6 +7,7 @@ import '../../core/units/unit_system.dart';
 import '../../data/repositories/history_repository.dart';
 import '../ads/ad_slot.dart';
 import '../progress/progress_view.dart';
+import '../shell/app_drawer.dart';
 
 /// Past workouts, and progress charts, as two tabs.
 class HistoryScreen extends ConsumerWidget {
@@ -17,6 +18,7 @@ class HistoryScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        drawer: const AppDrawer(),
         appBar: AppBar(
           title: const Text('History'),
           bottom: const TabBar(

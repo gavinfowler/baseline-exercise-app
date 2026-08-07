@@ -12,6 +12,7 @@ import '../ads/ad_slot.dart';
 import '../cardio/cardio_card.dart';
 import '../rest_timer/rest_timer_bar.dart';
 import '../rest_timer/rest_timer_controller.dart';
+import '../shell/app_drawer.dart';
 import 'exercise_picker.dart';
 import 'set_entry_dialog.dart';
 
@@ -24,6 +25,7 @@ class WorkoutScreen extends ConsumerWidget {
     final active = ref.watch(activeSessionProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Workout'),
         actions: [

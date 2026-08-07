@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../data/db/app_database.dart';
 import '../../domain/models/enums.dart';
+import '../shell/app_drawer.dart';
 import 'exercise_editor_sheet.dart';
 
 /// Browse, search, filter, add and archive exercises.
@@ -43,6 +44,7 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
     final catalog = ref.watch(exerciseCatalogProvider(_filter));
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Exercises'),
         actions: [

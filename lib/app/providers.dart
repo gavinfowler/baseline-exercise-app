@@ -19,6 +19,22 @@ import '../domain/models/vocabulary.dart';
 import '../domain/plan_import/plan_importer.dart';
 import '../domain/progression/progression_service.dart';
 
+/// Which top-level destination the shell is showing.
+///
+/// Lives here rather than in `AppShell` because the drawer is built inside each
+/// destination's own `Scaffold`, not the shell's, and so has no way to call back
+/// up the widget tree.
+class ShellDestination extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void select(int index) => state = index;
+}
+
+final shellDestinationProvider = NotifierProvider<ShellDestination, int>(
+  ShellDestination.new,
+);
+
 /// The single application database.
 ///
 /// Tests override this with an in-memory instance:

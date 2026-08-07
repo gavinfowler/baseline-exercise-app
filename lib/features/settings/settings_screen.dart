@@ -10,6 +10,7 @@ import '../../core/units/unit_system.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../domain/backup/backup_service.dart';
 import '../ads/ad_slot.dart';
+import '../shell/app_drawer.dart';
 
 /// Units, rest defaults, alerts, and the backup controls.
 class SettingsScreen extends ConsumerWidget {
@@ -22,6 +23,7 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsRepositoryProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(title: const Text('Settings')),
       body: Column(
         children: [

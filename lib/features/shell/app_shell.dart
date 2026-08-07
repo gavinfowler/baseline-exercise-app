@@ -9,65 +9,30 @@ import '../session/workout_screen.dart';
 import '../settings/settings_screen.dart';
 
 /// Top-level navigation.
-class AppShell extends ConsumerStatefulWidget {
+///
+/// Each destination keeps its own `Scaffold`, and each one carries an
+/// [AppDrawer]. That is deliberate: hoisting them into a single shell `AppBar`
+/// would cost the per-screen actions, the floating action buttons, and
+/// History's tab bar. This widget only decides which one is on screen.
+///
+/// The stack order here is the index order in [AppDrawer].
+class AppShell extends ConsumerWidget {
   const AppShell({super.key});
 
   @override
-  ConsumerState<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends ConsumerState<AppShell> {
-  int _index = 0;
-
-  static const _destinations = [
-    NavigationDestination(
-      icon: Icon(Icons.fitness_center_outlined),
-      selectedIcon: Icon(Icons.fitness_center),
-      label: 'Workout',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.list_alt_outlined),
-      selectedIcon: Icon(Icons.list_alt),
-      label: 'Exercises',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.calendar_month_outlined),
-      selectedIcon: Icon(Icons.calendar_month),
-      label: 'Plans',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.history_outlined),
-      selectedIcon: Icon(Icons.history),
-      label: 'History',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.settings_outlined),
-      selectedIcon: Icon(Icons.settings),
-      label: 'Settings',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Ensures the starter catalog exists before the picker is ever opened.
     ref.watch(catalogSeedProvider);
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: const [
-          WorkoutScreen(),
-          ExerciseCatalogScreen(),
-          PlansScreen(),
-          HistoryScreen(),
-          SettingsScreen(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        destinations: _destinations,
-        onDestinationSelected: (i) => setState(() => _index = i),
-      ),
+    return IndexedStack(
+      index: ref.watch(shellDestinationProvider),
+      children: const [
+        WorkoutScreen(),
+        PlansScreen(),
+        ExerciseCatalogScreen(),
+        HistoryScreen(),
+        SettingsScreen(),
+      ],
     );
   }
 }

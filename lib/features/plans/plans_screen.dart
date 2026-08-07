@@ -6,6 +6,7 @@ import '../../app/providers.dart';
 import '../../data/db/app_database.dart';
 import '../../domain/models/enums.dart';
 import '../ads/ad_slot.dart';
+import '../shell/app_drawer.dart';
 import 'plan_editor_screen.dart';
 import 'plan_import_screen.dart';
 
@@ -18,6 +19,7 @@ class PlansScreen extends ConsumerWidget {
     final plans = ref.watch(planListProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Plans'),
         actions: [
