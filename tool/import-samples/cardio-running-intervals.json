@@ -1,0 +1,178 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Sample — Running Week (metric)",
+    "description": "Cardio only, metric, paces per kilometre. Covers steady runs prescribed by duration, by distance, and by both, plus three shapes of structured session: distance repeats, time surges, and an unbroken tempo. Nothing here is strength, so the plan should read as a single discipline throughout.",
+    "mode": "static",
+    "units": "metric",
+    "scheduleType": "weekly",
+    "days": [
+      {
+        "label": "Easy Run",
+        "dayOfWeek": "tuesday",
+        "notes": "Duration only — no distance target, so the pace field stays open.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2400,
+                "targetPace": "6:15"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "400 m Repeats",
+        "dayOfWeek": "wednesday",
+        "notes": "Structured by distance. Totals should be mirrored onto the steady fields on import.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2700,
+                "distance": 7.2,
+                "notes": "8 x 400 m at 5K effort, 200 m jog between.",
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workDistance": 2,
+                    "workPace": "6:30"
+                  },
+                  {
+                    "label": "400 m repeats",
+                    "repeat": 8,
+                    "workDistance": 0.4,
+                    "workPace": "4:05",
+                    "recoveryDistance": 0.2,
+                    "recoveryPace": "7:30"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workDistance": 2,
+                    "workPace": "6:45"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Surges",
+        "dayOfWeek": "thursday",
+        "notes": "Structured by time, with a flat rest rather than a recovery distance.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2280,
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "6:30"
+                  },
+                  {
+                    "label": "Surges",
+                    "repeat": 10,
+                    "workSeconds": 60,
+                    "workPace": "4:20",
+                    "restSeconds": 60,
+                    "recoveryPace": "7:00"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 480,
+                    "workPace": "6:45"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Tempo",
+        "dayOfWeek": "saturday",
+        "notes": "One unbroken effort — a structured session with no recovery segment at all.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Treadmill Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 2400,
+                "distance": 7.5,
+                "inclinePercent": 1,
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "6:30"
+                  },
+                  {
+                    "label": "Tempo",
+                    "repeat": 1,
+                    "workSeconds": 1200,
+                    "workPace": "4:45"
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "6:45"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Long Run",
+        "dayOfWeek": "sunday",
+        "notes": "Distance and duration together, so the pace is implied by both.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 5400,
+                "distance": 16,
+                "targetPace": "5:37"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

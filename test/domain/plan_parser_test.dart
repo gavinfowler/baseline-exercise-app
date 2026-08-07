@@ -690,6 +690,33 @@ void main() {
     }
   });
 
+  group('import samples', () {
+    // Developer fixtures for manually exercising the import screen. They are
+    // not bundled into the app, so nothing else would notice them rotting.
+    for (final name in const [
+      'strength-static-metric.json',
+      'strength-periodized-imperial.json',
+      'cardio-running-intervals.json',
+      'cardio-machines.json',
+      'hybrid-week.json',
+    ]) {
+      test('$name parses without errors or warnings', () {
+        final file = File('tool/import-samples/$name');
+        expect(file.existsSync(), isTrue, reason: 'missing sample $name');
+
+        final result = parser.parse(file.readAsStringSync());
+
+        // Warnings count here too. These files exist to be loaded by hand while
+        // checking the UI, and a warning banner would muddy what is being read.
+        expect(
+          result.issues,
+          isEmpty,
+          reason: 'Sample $name reported: ${result.issues.join('; ')}',
+        );
+      });
+    }
+  });
+
   group('shipped JSON Schema', () {
     test('is valid JSON and describes version 1.0', () {
       // The schema is what AI tools generate against, so a broken one is worse

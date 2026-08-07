@@ -1,0 +1,214 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Sample — Periodized 4-Week Block (lb)",
+    "description": "Strength only, imperial, periodized. Weights are in pounds and must land in the database as kilograms. Every day carries a weekNumber, and the prescription rises week to week rather than tracking a baseline — periodized plans force weightMode absolute.",
+    "mode": "periodized",
+    "units": "imperial",
+    "scheduleType": "weekly",
+    "durationWeeks": 4,
+    "startDate": "2026-09-07",
+    "days": [
+      {
+        "label": "Week 1 — Squat",
+        "weekNumber": 1,
+        "dayOfWeek": "monday",
+        "notes": "225 lb should import as 102.06 kg.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 225,
+                "weightMode": "absolute"
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "rounds": 3,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Leg Press",
+                "type": "strength",
+                "reps": 10,
+                "weight": 300,
+                "weightMode": "absolute",
+                "rpe": 8
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 1 — Bench",
+        "weekNumber": 1,
+        "dayOfWeek": "thursday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 5,
+                "weight": 185,
+                "weightMode": "absolute"
+              }
+            ]
+          },
+          {
+            "kind": "superset",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 15,
+            "restAfterRoundSeconds": 90,
+            "exercises": [
+              {
+                "name": "Dumbbell Row",
+                "type": "strength",
+                "reps": 10,
+                "weight": 70,
+                "weightMode": "absolute"
+              },
+              {
+                "name": "Lateral Raise",
+                "type": "strength",
+                "reps": 15,
+                "weight": 20,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 2 — Squat",
+        "weekNumber": 2,
+        "dayOfWeek": "monday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 235,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 2 — Bench",
+        "weekNumber": 2,
+        "dayOfWeek": "thursday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 5,
+                "weight": 195,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 3 — Squat",
+        "weekNumber": 3,
+        "dayOfWeek": "monday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 210,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 3,
+                "weight": 250,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 3 — Bench",
+        "weekNumber": 3,
+        "dayOfWeek": "thursday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 5,
+            "restAfterRoundSeconds": 210,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 3,
+                "weight": 205,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week 4 — Deload",
+        "weekNumber": 4,
+        "dayOfWeek": "monday",
+        "notes": "Half the volume, two thirds of the load.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 3,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 165,
+                "weightMode": "absolute"
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "rounds": 3,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 5,
+                "weight": 135,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

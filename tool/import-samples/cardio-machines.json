@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Sample — Machine Cardio",
+    "description": "Cardio only, on activities that do not track pace: cycling, rowing, elliptical, stairs and swimming. This is the file for checking inclinePercent and resistanceLevel, and for confirming that the pace field is hidden wherever it makes no sense.",
+    "mode": "static",
+    "units": "metric",
+    "scheduleType": "sequential",
+    "days": [
+      {
+        "label": "Bike Intervals",
+        "notes": "Resistance level rather than pace.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Stationary Bike",
+                "type": "cardio",
+                "activity": "cycle",
+                "durationSeconds": 2400,
+                "distance": 16,
+                "resistanceLevel": 12,
+                "notes": "5 minutes easy, then 10 x 1 minute hard."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Row Pyramid",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Rowing Machine",
+                "type": "cardio",
+                "activity": "row",
+                "durationSeconds": 1800,
+                "distance": 6,
+                "resistanceLevel": 5,
+                "notes": "250 m, 500 m, 750 m, 1000 m and back down."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Incline Walk",
+        "notes": "The one machine day where incline is the whole point.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Treadmill Run",
+                "type": "cardio",
+                "activity": "walk",
+                "durationSeconds": 2700,
+                "distance": 4.5,
+                "inclinePercent": 12
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Cross-Training Circuit",
+        "notes": "Three machines back to back — a cardio circuit, which the block kinds support just as well as a strength one.",
+        "blocks": [
+          {
+            "kind": "circuit",
+            "label": "Machine circuit",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 30,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Elliptical",
+                "type": "cardio",
+                "activity": "elliptical",
+                "durationSeconds": 300,
+                "resistanceLevel": 8
+              },
+              {
+                "name": "Stair Climber",
+                "type": "cardio",
+                "activity": "stairs",
+                "durationSeconds": 300,
+                "resistanceLevel": 10
+              },
+              {
+                "name": "Rowing Machine",
+                "type": "cardio",
+                "activity": "row",
+                "durationSeconds": 300,
+                "distance": 1,
+                "resistanceLevel": 6
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Swim",
+        "notes": "Distance only, no duration — the other half of the cardio minimum.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Swim",
+                "type": "cardio",
+                "activity": "swim",
+                "distance": 1.5,
+                "notes": "Front crawl, breathing every third stroke."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Sample — Hybrid Week",
+    "description": "Both disciplines in one plan, but never inside the same block. This is the case the split navigation has to render correctly: each block belongs to exactly one discipline, and the day editor should show the right icon and the right summary for each.",
+    "mode": "static",
+    "units": "metric",
+    "scheduleType": "weekly",
+    "days": [
+      {
+        "label": "Lift, then run",
+        "dayOfWeek": "monday",
+        "notes": "Strength block first, cardio block second, in the same day.",
+        "blocks": [
+          {
+            "kind": "single",
+            "label": "Squat",
+            "rounds": 4,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 100,
+                "weightMode": "baseline"
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "label": "Accessories",
+            "rounds": 3,
+            "restAfterRoundSeconds": 90,
+            "exercises": [
+              {
+                "name": "Walking Lunge",
+                "type": "strength",
+                "reps": 12,
+                "weight": 20,
+                "weightMode": "absolute"
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "label": "Finisher",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 1200,
+                "distance": 3.5,
+                "targetPace": "5:43",
+                "notes": "Easy shakeout on tired legs."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Run only",
+        "dayOfWeek": "wednesday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Outdoor Run",
+                "type": "cardio",
+                "activity": "run",
+                "durationSeconds": 3000,
+                "distance": 8,
+                "intervals": [
+                  {
+                    "label": "Warm-up",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "6:30"
+                  },
+                  {
+                    "label": "Cruise intervals",
+                    "repeat": 5,
+                    "workDistance": 1,
+                    "workPace": "4:40",
+                    "restSeconds": 90
+                  },
+                  {
+                    "label": "Cool-down",
+                    "repeat": 1,
+                    "workSeconds": 600,
+                    "workPace": "6:45"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Upper only",
+        "dayOfWeek": "friday",
+        "blocks": [
+          {
+            "kind": "superset",
+            "label": "Push/pull",
+            "rounds": 4,
+            "restBetweenExercisesSeconds": 15,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 6,
+                "weight": 80,
+                "weightMode": "baseline"
+              },
+              {
+                "name": "Pull-Up",
+                "type": "strength",
+                "reps": 8,
+                "weight": 0,
+                "weightMode": "absolute",
+                "toFailure": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Cross-train",
+        "dayOfWeek": "sunday",
+        "notes": "Two cardio blocks on different machines.",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Stationary Bike",
+                "type": "cardio",
+                "activity": "cycle",
+                "durationSeconds": 1800,
+                "distance": 12,
+                "resistanceLevel": 9
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "rounds": 1,
+            "exercises": [
+              {
+                "name": "Rowing Machine",
+                "type": "cardio",
+                "activity": "row",
+                "durationSeconds": 900,
+                "distance": 3,
+                "resistanceLevel": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

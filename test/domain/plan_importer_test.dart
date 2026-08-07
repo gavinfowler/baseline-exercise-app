@@ -293,6 +293,80 @@ void main() {
     }
   });
 
+  group('import samples import end to end', () {
+    // The developer fixtures reach further than the shipped examples do —
+    // cardio circuits, resistance levels, inclines — so parsing cleanly is not
+    // on its own proof that they land in the database.
+    for (final name in const [
+      'strength-static-metric.json',
+      'strength-periodized-imperial.json',
+      'cardio-running-intervals.json',
+      'cardio-machines.json',
+      'hybrid-week.json',
+    ]) {
+      test(name, () async {
+        final source = File('tool/import-samples/$name').readAsStringSync();
+
+        final outcome = await importer.importSource(source);
+        expect(outcome.isSuccess, isTrue, reason: outcome.issues.join('; '));
+
+        final days = await plans.loadPlanDays(outcome.summary!.planId);
+        expect(days, hasLength(outcome.summary!.dayCount));
+        for (final day in days) {
+          expect(
+            day.blocks,
+            isNotEmpty,
+            reason: '${day.day.label} has no work',
+          );
+          for (final block in day.blocks) {
+            expect(block.items, isNotEmpty);
+            // A superset or circuit that arrived with one exercise would be a
+            // parser bug the day editor then renders as an error.
+            if (block.block.kind.isGrouped) {
+              expect(block.items.length, greaterThanOrEqualTo(2));
+            }
+          }
+        }
+      });
+    }
+
+    test('machine cardio keeps its incline and resistance', () async {
+      // No UI wrote these columns before the cardio screen existed, so this is
+      // the only end-to-end coverage they have.
+      final source = File(
+        'tool/import-samples/cardio-machines.json',
+      ).readAsStringSync();
+
+      final outcome = await importer.importSource(source);
+      expect(outcome.isSuccess, isTrue, reason: outcome.issues.join('; '));
+
+      final days = await plans.loadPlanDays(outcome.summary!.planId);
+      final items = [
+        for (final day in days)
+          for (final block in day.blocks) ...block.items,
+      ];
+
+      expect(
+        items.where((i) => i.targetResistanceLevel != null),
+        isNotEmpty,
+        reason: 'no resistance level survived the import',
+      );
+      expect(
+        items.where((i) => i.targetInclinePercent != null),
+        isNotEmpty,
+        reason: 'no incline survived the import',
+      );
+
+      final inclineWalk = days
+          .firstWhere((d) => d.day.label == 'Incline Walk')
+          .blocks
+          .single
+          .items
+          .single;
+      expect(inclineWalk.targetInclinePercent, 12);
+    });
+  });
+
   group('structured cardio', () {
     test('survives the round trip into the database', () async {
       // The imperial example is the interesting one: its quarter-mile reps and

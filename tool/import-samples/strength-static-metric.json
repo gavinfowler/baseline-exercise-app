@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "name": "Sample — Static Upper/Lower",
+    "description": "Strength only, metric, weekly schedule. Exercises all four weight modes, a superset and a circuit. Use this to check that a static plan's baseline tracking, block kinds and weekday scheduling all import correctly.",
+    "mode": "static",
+    "units": "metric",
+    "scheduleType": "weekly",
+    "startDate": "2026-09-07",
+    "days": [
+      {
+        "label": "Upper A",
+        "dayOfWeek": "monday",
+        "notes": "Every weight mode appears once on this day, on purpose.",
+        "blocks": [
+          {
+            "kind": "single",
+            "label": "Main press",
+            "rounds": 4,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 5,
+                "weight": 80,
+                "weightMode": "baseline",
+                "notes": "Starts at 80 kg and climbs whenever 5 reps are beaten at a heavier load."
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "label": "Back-off set",
+            "rounds": 2,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Barbell Bench Press",
+                "type": "strength",
+                "reps": 8,
+                "weightMode": "baselinePercent",
+                "weightPercent": 85,
+                "notes": "85% of whatever the working weight has reached."
+              }
+            ]
+          },
+          {
+            "kind": "superset",
+            "label": "Pull pair",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 15,
+            "restAfterRoundSeconds": 120,
+            "exercises": [
+              {
+                "name": "Barbell Row",
+                "type": "strength",
+                "reps": 8,
+                "weight": 60,
+                "weightMode": "baselinePlus",
+                "weightOffset": 2.5,
+                "notes": "Working weight plus 2.5 kg, recalculated each session."
+              },
+              {
+                "name": "Face Pull",
+                "type": "strength",
+                "reps": 15,
+                "weight": 20,
+                "weightMode": "absolute",
+                "rpe": 7
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Lower A",
+        "dayOfWeek": "wednesday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 4,
+            "restAfterRoundSeconds": 210,
+            "exercises": [
+              {
+                "name": "Back Squat",
+                "type": "strength",
+                "reps": 5,
+                "weight": 100,
+                "weightMode": "baseline",
+                "tempo": "3-1-1-0"
+              }
+            ]
+          },
+          {
+            "kind": "single",
+            "rounds": 3,
+            "restAfterRoundSeconds": 150,
+            "exercises": [
+              {
+                "name": "Romanian Deadlift",
+                "type": "strength",
+                "reps": 8,
+                "weight": 80,
+                "weightMode": "absolute"
+              }
+            ]
+          },
+          {
+            "kind": "circuit",
+            "label": "Accessory circuit",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 20,
+            "restAfterRoundSeconds": 90,
+            "exercises": [
+              {
+                "name": "Leg Curl",
+                "type": "strength",
+                "reps": 12,
+                "weight": 40,
+                "weightMode": "absolute"
+              },
+              {
+                "name": "Standing Calf Raise",
+                "type": "strength",
+                "reps": 15,
+                "weight": 60,
+                "weightMode": "absolute"
+              },
+              {
+                "name": "Hanging Leg Raise",
+                "type": "strength",
+                "reps": 12,
+                "weight": 0,
+                "weightMode": "absolute",
+                "toFailure": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Upper B",
+        "dayOfWeek": "friday",
+        "blocks": [
+          {
+            "kind": "single",
+            "rounds": 4,
+            "restAfterRoundSeconds": 180,
+            "exercises": [
+              {
+                "name": "Overhead Press",
+                "type": "strength",
+                "reps": 6,
+                "weight": 50,
+                "weightMode": "baseline"
+              }
+            ]
+          },
+          {
+            "kind": "superset",
+            "label": "Arms",
+            "rounds": 3,
+            "restBetweenExercisesSeconds": 10,
+            "restAfterRoundSeconds": 90,
+            "exercises": [
+              {
+                "name": "Barbell Curl",
+                "type": "strength",
+                "reps": 10,
+                "weight": 30,
+                "weightMode": "absolute"
+              },
+              {
+                "name": "Triceps Pushdown",
+                "type": "strength",
+                "reps": 12,
+                "weight": 35,
+                "weightMode": "absolute"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
