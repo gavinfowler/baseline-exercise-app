@@ -223,6 +223,37 @@ flutter test                    # unit + widget
 flutter test integration_test   # end-to-end, needs a device
 ```
 
+### Testing against populated data
+
+A fresh install has no history, so the log, the progress charts, baselines and
+personal records all render empty. To fill them:
+
+```powershell
+dart run tool/seed_data.dart
+```
+
+That writes `tool/seed/baseline-seed-full.json` — 18 weeks of sessions across
+three plans, with weights that climb and paces that improve. Load it through
+**Settings → Restore from backup**. It also writes
+`baseline-seed-starter.json`: the catalog and one plan with no history, for
+checking empty states without reinstalling.
+
+The output is a backup file rather than a SQLite database so the same file loads
+on Android and Windows, and so nothing in `lib/` needs a debug-only code path.
+Restoring is **destructive** — it replaces everything. Export your own data
+first if it matters.
+
+The script writes the backup JSON by hand, so `test/tool/seed_data_test.dart`
+restores its output through `BackupService` on every run; otherwise the two
+could drift apart and only fail on a real device.
+
+### Verifying plan import
+
+`tool/import-samples/` holds five valid plan files covering the format more
+widely than the bundled examples do — both unit systems, every block kind, all
+four weight modes, structured cardio, and the machine activities that carry an
+incline or resistance rather than a pace. Load them from **Plans → import**.
+
 ### Where UI-plus-database tests live
 
 `flutter_test` runs widget tests inside a fake-async zone. Drift does not

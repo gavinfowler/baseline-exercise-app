@@ -57,3 +57,8 @@ coverage/
 key.properties
 *.jks
 *.keystore
+
+# Generated seed data. The script is the source of truth, not its output —
+# committing a 3 MB file that `dart run tool/seed_data.dart` recreates would
+# just make every regeneration a large, unreadable diff.
+/tool/seed/
