@@ -61,15 +61,20 @@ enum CardioActivity {
 enum PlanMode {
   /// Repeat the same workout indefinitely. Beating the prescribed weight at the
   /// prescribed reps *raises the baseline*, so the plan tracks the user upward.
-  staticPlan('static'),
+  staticPlan('static', 'Progressive Program'),
 
   /// A fixed program over a date range. Beating the prescription is recorded as
   /// a personal record but **never** alters the plan.
-  periodized('periodized');
+  periodized('periodized', 'Fixed Program');
 
-  const PlanMode(this.wireName);
+  const PlanMode(this.wireName, this.label);
 
   final String wireName;
+
+  /// What the user sees. Kept separate from [wireName] so the file format is
+  /// unaffected by renaming it — "static" and "periodized" are jargon, and every
+  /// existing plan file and backup still says them.
+  final String label;
 
   static PlanMode? fromWire(String? value) =>
       PlanMode.values.firstWhereOrNull((e) => e.wireName == value);

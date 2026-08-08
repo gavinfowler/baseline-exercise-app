@@ -61,54 +61,186 @@ class PlanDayEditorScreen extends ConsumerWidget {
     );
   }
 
+  /// Adds a block, together with the first exercise in it.
+  ///
+  /// The two are one step because a block with nothing in it prescribes nothing
+  /// — and doing it this way is what lets the block type settle the discipline
+  /// up front, so the exercise picker is already filtered when it opens.
   Future<void> _addBlock(
     BuildContext context,
     WidgetRef ref,
     PlanDayDetail? detail,
   ) async {
-    final kind = await showDialog<BlockKind>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Add a block'),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(BlockKind.single),
-            child: const ListTile(
-              leading: Icon(Icons.fitness_center),
-              title: Text('Single exercise'),
-              subtitle: Text('Straight sets of one movement'),
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(BlockKind.superset),
-            child: const ListTile(
-              leading: Icon(Icons.swap_calls),
-              title: Text('Superset'),
-              subtitle: Text('Two or more exercises back to back'),
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(context).pop(BlockKind.circuit),
-            child: const ListTile(
-              leading: Icon(Icons.loop),
-              title: Text('Circuit'),
-              subtitle: Text('Several exercises, endurance style'),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (kind == null) return;
+    final choice = await _pickBlockType(context);
+    if (choice == null || !context.mounted) return;
 
-    await ref
-        .read(planRepositoryProvider)
-        .addBlock(
-          planDayId: day.id,
-          orderIndex: detail?.blocks.length ?? 0,
-          kind: kind,
-        );
+    final exercise = await pickExercise(context, type: choice.type);
+    if (exercise == null || !context.mounted) return;
+
+    final prescription = await _prescribe(
+      context,
+      ref,
+      exercise: exercise,
+      planMode: plan.mode,
+    );
+    if (prescription == null) return;
+
+    // Written only now, so backing out of the picker or the prescription leaves
+    // no empty block behind.
+    final repo = ref.read(planRepositoryProvider);
+    final blockId = await repo.addBlock(
+      planDayId: day.id,
+      orderIndex: detail?.blocks.length ?? 0,
+      kind: choice.kind,
+    );
+    await _writeItem(
+      repo,
+      planBlockId: blockId,
+      exerciseId: exercise.id,
+      orderIndex: 0,
+      prescription: prescription,
+    );
     ref.read(planEditRevisionProvider.notifier).bump();
   }
+}
+
+/// The block shapes offered when adding one.
+///
+/// Cardio is a block type of its own rather than a discipline chosen afterwards:
+/// it is what the user is setting out to add, and it decides everything that
+/// follows. The block kind stored is still `single` — the schema has no cardio
+/// kind, and a block's discipline is derived from the exercises in it.
+Future<({BlockKind kind, ExerciseType type})?> _pickBlockType(
+  BuildContext context,
+) {
+  return showDialog<({BlockKind kind, ExerciseType type})>(
+    context: context,
+    builder: (context) => SimpleDialog(
+      title: const Text('Add a block'),
+      children: [
+        for (final option in const [
+          (
+            kind: BlockKind.single,
+            type: ExerciseType.strength,
+            icon: Icons.fitness_center,
+            title: 'Single exercise',
+            subtitle: 'Straight sets of one movement',
+          ),
+          (
+            kind: BlockKind.superset,
+            type: ExerciseType.strength,
+            icon: Icons.swap_calls,
+            title: 'Superset',
+            subtitle: 'Two or more exercises back to back',
+          ),
+          (
+            kind: BlockKind.circuit,
+            type: ExerciseType.strength,
+            icon: Icons.loop,
+            title: 'Circuit',
+            subtitle: 'Several exercises, endurance style',
+          ),
+          (
+            kind: BlockKind.single,
+            type: ExerciseType.cardio,
+            icon: Icons.directions_run,
+            title: 'Cardio',
+            subtitle: 'A run, ride or row — steady or structured',
+          ),
+        ])
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(
+              context,
+            ).pop((kind: option.kind, type: option.type)),
+            child: ListTile(
+              leading: Icon(option.icon),
+              title: Text(option.title),
+              subtitle: Text(option.subtitle),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+/// One prescription, of whichever discipline the exercise belongs to.
+///
+/// Exactly one side is ever set. This exists so the "which editor, then which
+/// repository call" branch is written once rather than at each of the three
+/// call sites that need it.
+class _Prescription {
+  const _Prescription.strength(StrengthItemResult this.strength)
+    : cardio = null;
+  const _Prescription.cardio(CardioItemResult this.cardio) : strength = null;
+
+  final StrengthItemResult? strength;
+  final CardioItemResult? cardio;
+}
+
+/// Opens the editor matching the exercise's discipline.
+Future<_Prescription?> _prescribe(
+  BuildContext context,
+  WidgetRef ref, {
+  required ExerciseRow exercise,
+  required PlanMode planMode,
+  PlanItemRow? existing,
+}) async {
+  final formatter = ref.read(unitFormatterProvider);
+
+  if (exercise.type == ExerciseType.cardio) {
+    final result = await showCardioItemEditor(
+      context,
+      exercise: exercise,
+      formatter: formatter,
+      existing: existing,
+    );
+    return result == null ? null : _Prescription.cardio(result);
+  }
+
+  final result = await showStrengthItemEditor(
+    context,
+    exercise: exercise,
+    planMode: planMode,
+    formatter: formatter,
+    existing: existing,
+  );
+  return result == null ? null : _Prescription.strength(result);
+}
+
+Future<void> _writeItem(
+  PlanRepository repo, {
+  required int planBlockId,
+  required int exerciseId,
+  required int orderIndex,
+  required _Prescription prescription,
+}) async {
+  final cardio = prescription.cardio;
+  if (cardio != null) {
+    await repo.addCardioItem(
+      planBlockId: planBlockId,
+      exerciseId: exerciseId,
+      orderIndex: orderIndex,
+      targetDurationSeconds: cardio.durationSeconds,
+      targetDistanceMeters: cardio.distanceMeters,
+      targetPaceSecPerKm: cardio.paceSecPerKm,
+      targetInclinePercent: cardio.inclinePercent,
+      targetResistanceLevel: cardio.resistanceLevel,
+      intervalsJson: cardio.intervalsJson,
+    );
+    return;
+  }
+
+  final strength = prescription.strength!;
+  await repo.addStrengthItem(
+    planBlockId: planBlockId,
+    exerciseId: exerciseId,
+    orderIndex: orderIndex,
+    targetReps: strength.reps,
+    targetWeightKg: strength.weightKg,
+    weightMode: strength.weightMode,
+    weightOffsetKg: strength.weightOffsetKg,
+    weightPercent: strength.weightPercent,
+  );
 }
 
 class _BlockCard extends ConsumerWidget {
@@ -286,56 +418,33 @@ class _BlockCard extends ConsumerWidget {
   }
 
   Future<void> _addExercise(BuildContext context, WidgetRef ref) async {
-    final locked = _blockType(ref.read(exercisesByIdProvider));
-
-    final type = locked ?? await pickExerciseType(context);
+    // The block's discipline was settled when it was created, so there is
+    // normally nothing left to ask and the picker opens already filtered. A
+    // block can still be emptied by removing every exercise from it, and then
+    // the question is open again.
+    final type =
+        _blockType(ref.read(exercisesByIdProvider)) ??
+        await pickExerciseType(context);
     if (type == null || !context.mounted) return;
 
     final exercise = await pickExercise(context, type: type);
     if (exercise == null || !context.mounted) return;
 
-    final repo = ref.read(planRepositoryProvider);
-    final formatter = ref.read(unitFormatterProvider);
+    final prescription = await _prescribe(
+      context,
+      ref,
+      exercise: exercise,
+      planMode: plan.mode,
+    );
+    if (prescription == null) return;
 
-    if (type == ExerciseType.cardio) {
-      final result = await showCardioItemEditor(
-        context,
-        exercise: exercise,
-        formatter: formatter,
-      );
-      if (result == null) return;
-
-      await repo.addCardioItem(
-        planBlockId: block.block.id,
-        exerciseId: exercise.id,
-        orderIndex: block.items.length,
-        targetDurationSeconds: result.durationSeconds,
-        targetDistanceMeters: result.distanceMeters,
-        targetPaceSecPerKm: result.paceSecPerKm,
-        targetInclinePercent: result.inclinePercent,
-        targetResistanceLevel: result.resistanceLevel,
-        intervalsJson: result.intervalsJson,
-      );
-    } else {
-      final result = await showStrengthItemEditor(
-        context,
-        exercise: exercise,
-        planMode: plan.mode,
-        formatter: formatter,
-      );
-      if (result == null) return;
-
-      await repo.addStrengthItem(
-        planBlockId: block.block.id,
-        exerciseId: exercise.id,
-        orderIndex: block.items.length,
-        targetReps: result.reps,
-        targetWeightKg: result.weightKg,
-        weightMode: result.weightMode,
-        weightOffsetKg: result.weightOffsetKg,
-        weightPercent: result.weightPercent,
-      );
-    }
+    await _writeItem(
+      ref.read(planRepositoryProvider),
+      planBlockId: block.block.id,
+      exerciseId: exercise.id,
+      orderIndex: block.items.length,
+      prescription: prescription,
+    );
     ref.read(planEditRevisionProvider.notifier).bump();
   }
 
@@ -349,52 +458,24 @@ class _BlockCard extends ConsumerWidget {
     final exercise = ref.read(exercisesByIdProvider)[item.exerciseId];
     if (exercise == null) return;
 
+    final prescription = await _prescribe(
+      context,
+      ref,
+      exercise: exercise,
+      planMode: plan.mode,
+      existing: item,
+    );
+    if (prescription == null) return;
+
     final repo = ref.read(planRepositoryProvider);
-    final formatter = ref.read(unitFormatterProvider);
-
-    if (exercise.type == ExerciseType.cardio) {
-      final result = await showCardioItemEditor(
-        context,
-        exercise: exercise,
-        formatter: formatter,
-        existing: item,
-      );
-      if (result == null) return;
-
-      await repo.deleteItem(item.id);
-      await repo.addCardioItem(
-        planBlockId: block.block.id,
-        exerciseId: exercise.id,
-        orderIndex: item.orderIndex,
-        targetDurationSeconds: result.durationSeconds,
-        targetDistanceMeters: result.distanceMeters,
-        targetPaceSecPerKm: result.paceSecPerKm,
-        targetInclinePercent: result.inclinePercent,
-        targetResistanceLevel: result.resistanceLevel,
-        intervalsJson: result.intervalsJson,
-      );
-    } else {
-      final result = await showStrengthItemEditor(
-        context,
-        exercise: exercise,
-        planMode: plan.mode,
-        formatter: formatter,
-        existing: item,
-      );
-      if (result == null) return;
-
-      await repo.deleteItem(item.id);
-      await repo.addStrengthItem(
-        planBlockId: block.block.id,
-        exerciseId: exercise.id,
-        orderIndex: item.orderIndex,
-        targetReps: result.reps,
-        targetWeightKg: result.weightKg,
-        weightMode: result.weightMode,
-        weightOffsetKg: result.weightOffsetKg,
-        weightPercent: result.weightPercent,
-      );
-    }
+    await repo.deleteItem(item.id);
+    await _writeItem(
+      repo,
+      planBlockId: block.block.id,
+      exerciseId: exercise.id,
+      orderIndex: item.orderIndex,
+      prescription: prescription,
+    );
     ref.read(planEditRevisionProvider.notifier).bump();
   }
 

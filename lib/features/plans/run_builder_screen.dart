@@ -57,9 +57,12 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
       appBar: AppBar(
         title: const Text('Structured workout'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(_workout),
-            child: const Text('Save'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: FilledButton(
+              onPressed: () => Navigator.of(context).pop(_workout),
+              child: const Text('Save'),
+            ),
           ),
         ],
       ),
@@ -79,6 +82,11 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
                     padding: const EdgeInsets.only(bottom: 96),
                     itemCount: _segments.length,
                     onReorderItem: _reorder,
+                    // Each card supplies its own handle on the left. Left on,
+                    // this would add a second one on the right, on top of the
+                    // remove button — and only on desktop, where the default
+                    // handle is the one that draws an icon.
+                    buildDefaultDragHandles: false,
                     itemBuilder: (context, i) => _SegmentCard(
                       key: ValueKey(i),
                       index: i,

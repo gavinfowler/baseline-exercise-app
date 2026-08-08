@@ -23,7 +23,7 @@ class PlanEditorScreen extends ConsumerWidget {
         heroTag: 'plan-editor-fab',
         onPressed: () => _addDay(context, ref, days.value?.length ?? 0),
         icon: const Icon(Icons.add),
-        label: const Text('Day'),
+        label: const Text('Workout'),
       ),
       body: days.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -39,7 +39,7 @@ class PlanEditorScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isStatic ? 'Static plan' : 'Periodized plan',
+                      plan.mode.label,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 4),
@@ -60,7 +60,7 @@ class PlanEditorScreen extends ConsumerWidget {
               const Padding(
                 padding: EdgeInsets.all(32),
                 child: Text(
-                  'No days yet. Add one to start building the plan.',
+                  'No workouts yet. Add one to start building the plan.',
                   textAlign: TextAlign.center,
                 ),
               )
@@ -77,12 +77,14 @@ class PlanEditorScreen extends ConsumerWidget {
     WidgetRef ref,
     int existingCount,
   ) async {
-    final controller = TextEditingController(text: 'Day ${existingCount + 1}');
+    final controller = TextEditingController(
+      text: 'Workout ${existingCount + 1}',
+    );
 
     final label = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New day'),
+        title: const Text('New workout'),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -141,7 +143,7 @@ class _DayTile extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              tooltip: 'Delete day',
+              tooltip: 'Delete workout',
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
                 await ref.read(planRepositoryProvider).deleteDay(day.id);

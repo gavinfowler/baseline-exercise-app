@@ -130,7 +130,12 @@ class _StrengthItemScreenState extends State<StrengthItemScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.exercise.name),
-        actions: [TextButton(onPressed: _submit, child: const Text('Save'))],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: FilledButton(onPressed: _submit, child: const Text('Save')),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
+import '../../branding/baseline_logo.dart';
 import '../../core/units/unit_system.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../domain/backup/backup_service.dart';
@@ -116,6 +117,29 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: Text(
                     'No account, no sync, and no network access. There are no '
                     'ads and no tracking.',
+                  ),
+                ),
+
+                const Divider(),
+                const _SectionHeader('Open source'),
+                const _OpenSourceCredits(),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('All licences'),
+                  subtitle: const Text(
+                    'Full licence text for every package, including indirect '
+                    'dependencies',
+                  ),
+                  onTap: () => showLicensePage(
+                    context: context,
+                    applicationName: 'Baseline',
+                    applicationLegalese:
+                        'Baseline is built on the open source packages listed '
+                        'here. Thank you to everyone who maintains them.',
+                    applicationIcon: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: BaselineLogo(size: 56),
+                    ),
                   ),
                 ),
               ],
@@ -255,6 +279,86 @@ class _SectionHeader extends StatelessWidget {
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).colorScheme.primary,
         ),
+      ),
+    );
+  }
+}
+
+/// The packages Baseline is built on, and what each one does here.
+///
+/// Only direct dependencies, named individually because a wall of transitive
+/// package names credits nobody. The full list, with licence text, is one tap
+/// away in Flutter's own licence page.
+class _OpenSourceCredits extends StatelessWidget {
+  const _OpenSourceCredits();
+
+  static const _packages = [
+    ('Flutter', 'The UI toolkit the whole app is built with', 'BSD-3-Clause'),
+    ('Drift', 'The SQLite database and its type-safe queries', 'MIT'),
+    ('sqlite3_flutter_libs', 'Ships the SQLite native library', 'MIT'),
+    ('Riverpod', 'State management and dependency injection', 'MIT'),
+    ('fl_chart', 'The progress charts', 'MIT'),
+    ('flutter_local_notifications', 'Rest timer alerts', 'BSD-3-Clause'),
+    ('json_schema', 'Validates imported plan files', 'BSD-3-Clause'),
+    ('intl', 'Date, time and number formatting', 'BSD-3-Clause'),
+    (
+      'file_selector',
+      'Choosing files for import, backup and restore',
+      'BSD-3-Clause',
+    ),
+    (
+      'path_provider',
+      'Finds where the database lives on each platform',
+      'BSD-3-Clause',
+    ),
+    ('timezone', 'Local time handling for scheduled alerts', 'MIT'),
+    (
+      'collection',
+      'Small collection helpers used across the domain',
+      'BSD-3-Clause',
+    ),
+    ('path', 'Filesystem path manipulation', 'BSD-3-Clause'),
+    ('cupertino_icons', 'The iOS-style icon set', 'MIT'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Baseline is offline and ad-free because these packages do the '
+            'heavy lifting.',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          for (final (name, purpose, licence) in _packages)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(name, style: theme.textTheme.bodyMedium),
+                      const SizedBox(width: 8),
+                      Text(
+                        licence,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(purpose, style: theme.textTheme.bodySmall),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

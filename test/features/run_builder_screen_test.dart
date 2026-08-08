@@ -33,9 +33,16 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        // Material 3's InkSparkle needs a fragment shader the widget-test
-        // environment cannot compile.
-        theme: ThemeData(splashFactory: InkRipple.splashFactory),
+        theme: ThemeData(
+          // Material 3's InkSparkle needs a fragment shader the widget-test
+          // environment cannot compile.
+          splashFactory: InkRipple.splashFactory,
+          // ReorderableListView only draws its own handle icon on desktop; on
+          // mobile it wraps the whole tile silently. Tests default to Android,
+          // where a duplicate handle would be invisible — so pin the platform
+          // to the one the bug appeared on.
+          platform: TargetPlatform.windows,
+        ),
         home: Scaffold(
           body: Builder(
             builder: (context) => ElevatedButton(
@@ -91,6 +98,32 @@ void main() {
     expect(find.text('Warm-up'), findsOneWidget);
     expect(find.text('Repeats'), findsOneWidget);
     expect(find.text('Cool-down'), findsOneWidget);
+  });
+
+  testWidgets('shows exactly one drag handle per segment', (tester) async {
+    // Each card draws its own handle, so ReorderableListView's default handles
+    // have to stay off. Left on they added a second one over the remove button
+    // — and only on desktop, which is the sort of thing a test that just counts
+    // widgets catches and a test that drags does not.
+    await open(tester, threeSegments());
+
+    expect(find.byIcon(Icons.drag_handle), findsNWidgets(3));
+  });
+
+  testWidgets('the handle does not collide with the remove button', (
+    tester,
+  ) async {
+    await open(tester, threeSegments());
+
+    final handle = tester.getRect(find.byIcon(Icons.drag_handle).first);
+    final remove = tester.getRect(find.byIcon(Icons.close).first);
+
+    expect(
+      handle.overlaps(remove),
+      isFalse,
+      reason: 'the drag handle is sitting on top of the remove button',
+    );
+    expect(handle.center.dx, lessThan(remove.center.dx));
   });
 
   testWidgets('saves the segments unchanged when nothing is moved', (

@@ -153,13 +153,13 @@ class _NewPlanSheetState extends State<_NewPlanSheet> {
               groupValue: _mode,
               onChanged: (value) =>
                   setState(() => _mode = value ?? PlanMode.staticPlan),
-              child: const Column(
+              child: Column(
                 children: [
                   RadioListTile<PlanMode>(
                     value: PlanMode.staticPlan,
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Repeat and progress'),
-                    subtitle: Text(
+                    title: Text(PlanMode.staticPlan.label),
+                    subtitle: const Text(
                       'The same workouts every time. Beat the target reps at a '
                       'heavier weight and the plan raises its target.',
                     ),
@@ -167,8 +167,8 @@ class _NewPlanSheetState extends State<_NewPlanSheet> {
                   RadioListTile<PlanMode>(
                     value: PlanMode.periodized,
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Fixed program'),
-                    subtitle: Text(
+                    title: Text(PlanMode.periodized.label),
+                    subtitle: const Text(
                       'Runs for a set number of weeks. The prescribed numbers '
                       'never change; beating them is recorded as a personal '
                       'record instead.',
@@ -265,8 +265,8 @@ class _PlanTile extends ConsumerWidget {
 
     final subtitle = [
       isStatic
-          ? 'Static — the plan moves up with you'
-          : 'Periodized — the prescription never changes',
+          ? '${PlanMode.staticPlan.label} — the plan moves up with you'
+          : '${PlanMode.periodized.label} — the prescription never changes',
       if (plan.durationWeeks != null) '${plan.durationWeeks} weeks',
       if (plan.source == PlanSource.imported) 'imported',
     ].join(' · ');
