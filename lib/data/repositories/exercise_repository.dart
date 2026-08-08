@@ -25,11 +25,13 @@ class ExerciseRepository {
   Stream<List<ExerciseRow>> watchAll({
     bool includeArchived = false,
     ExerciseType? type,
+    CardioActivity? cardioActivity,
     String? muscleGroup,
     String? equipment,
   }) => _filtered(
     includeArchived: includeArchived,
     type: type,
+    cardioActivity: cardioActivity,
     muscleGroup: muscleGroup,
     equipment: equipment,
   ).watch();
@@ -37,11 +39,13 @@ class ExerciseRepository {
   Future<List<ExerciseRow>> getAll({
     bool includeArchived = false,
     ExerciseType? type,
+    CardioActivity? cardioActivity,
     String? muscleGroup,
     String? equipment,
   }) => _filtered(
     includeArchived: includeArchived,
     type: type,
+    cardioActivity: cardioActivity,
     muscleGroup: muscleGroup,
     equipment: equipment,
   ).get();
@@ -54,6 +58,7 @@ class ExerciseRepository {
   SimpleSelectStatement<$ExercisesTable, ExerciseRow> _filtered({
     required bool includeArchived,
     ExerciseType? type,
+    CardioActivity? cardioActivity,
     String? muscleGroup,
     String? equipment,
   }) {
@@ -65,6 +70,9 @@ class ExerciseRepository {
     }
     if (type != null) {
       query.where((t) => t.type.equalsValue(type));
+    }
+    if (cardioActivity != null) {
+      query.where((t) => t.cardioActivity.equalsValue(cardioActivity));
     }
     if (muscleGroup != null && muscleGroup.trim().isNotEmpty) {
       final needle = muscleGroup.trim().toLowerCase();

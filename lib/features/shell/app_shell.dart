@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../domain/models/enums.dart';
 import '../exercises/exercise_catalog_screen.dart';
 import '../history/history_screen.dart';
 import '../plans/plans_screen.dart';
@@ -29,7 +30,8 @@ class AppShell extends ConsumerWidget {
       children: const [
         WorkoutScreen(),
         PlansScreen(),
-        ExerciseCatalogScreen(),
+        ExerciseCatalogScreen(type: ExerciseType.strength),
+        ExerciseCatalogScreen(type: ExerciseType.cardio),
         HistoryScreen(),
         SettingsScreen(),
       ],

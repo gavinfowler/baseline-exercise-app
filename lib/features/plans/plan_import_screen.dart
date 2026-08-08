@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
 import '../../core/result.dart';
@@ -12,6 +13,7 @@ import '../../domain/models/enums.dart';
 import '../../domain/models/run_segment.dart';
 import '../../domain/plan_import/plan_dto.dart';
 import '../../domain/plan_import/plan_parser.dart';
+import '../../domain/progress_export/progress_export_service.dart';
 
 /// Upload a plan file, see exactly what it will create, then commit it.
 ///
@@ -38,7 +40,33 @@ class _PlanImportScreenState extends ConsumerState<PlanImportScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           const _HowItWorks(),
-          const SizedBox(height: 16),
+
+          // The order below follows the round trip: hand the AI your training
+          // so far, hand it the format, then bring its answer back in.
+          const SizedBox(height: 24),
+          const _ShareProgress(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _busy ? null : _copyProgress,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Copy progress for AI'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _busy ? null : _saveProgress,
+                  icon: const Icon(Icons.save_alt),
+                  label: const Text('Save progress file'),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -106,6 +134,107 @@ $schema
         content: Text('Format copied. Paste it into any AI chat tool.'),
       ),
     );
+  }
+
+  /// Copies the last three months of training **and** the plan format, so one
+  /// paste is a complete request: here is what I have been doing, here is the
+  /// shape of the answer, write me the next block.
+  Future<void> _copyProgress() async {
+    final export = await _buildExport();
+    if (export == null || !mounted) return;
+
+    final schema = await ref.read(planSchemaProvider.future);
+    final payload =
+        '''
+Here is my training from the last ${export.to.difference(export.from).inDays} days,
+exported from my workout app. Use it to write me a new training plan.
+
+Read it first, then tell me in one short paragraph what you are basing the plan
+on. After that, reply with only the plan as a single JSON document that
+validates against the JSON Schema at the end of this message — no commentary
+around it, no code fences.
+
+How to read the training data:
+- All numbers are metric: kilograms, meters, seconds, seconds per kilometer.
+  "preferredDisplayUnits" is only how I like them shown to me.
+- "strengthExercises" and "cardioExercises" summarise the window;
+  "sessions" is the full log those summaries came from.
+- "personalRecords" are all-time, not just this window. Do not prescribe below
+  one without a deliberate reason, such as a planned deload.
+
+Notes on the plan you write back:
+- "mode": "static" means the plan raises its own weights as I get stronger.
+  "mode": "periodized" means the prescribed numbers stay fixed for the program.
+- Reference exercises by their common name; they do not need to exist yet.
+- Put two or more exercises in one block with "kind": "superset" to superset them.
+
+--- MY TRAINING ---
+${export.json}
+
+--- PLAN FORMAT ---
+$schema
+''';
+
+    await Clipboard.setData(ClipboardData(text: payload));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Copied ${export.sessionCount} workouts. Paste it into any AI chat '
+          'tool.',
+        ),
+      ),
+    );
+  }
+
+  /// The same document as a file, for tools that take an attachment rather than
+  /// a very long paste.
+  Future<void> _saveProgress() async {
+    final export = await _buildExport();
+    if (export == null || !mounted) return;
+
+    final suggested =
+        'training-progress-'
+        '${DateFormat('yyyy-MM-dd').format(export.to)}.json';
+    final location = await getSaveLocation(suggestedName: suggested);
+    if (location == null || !mounted) return;
+
+    await File(location.path).writeAsString(export.json);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${export.sessionCount} workouts written to ${location.path}',
+        ),
+      ),
+    );
+  }
+
+  /// Builds the export, or explains why there is nothing worth sending.
+  ///
+  /// An empty export would be worse than no button: the AI would invent a
+  /// starting point and present it as tailored.
+  Future<ProgressExport?> _buildExport() async {
+    setState(() => _busy = true);
+    try {
+      final export = await ref.read(progressExportServiceProvider).export();
+      if (!export.isEmpty) return export;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No completed workouts in the last 3 months yet — there is '
+              'nothing to send.',
+            ),
+          ),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _pickFile() async {
@@ -185,9 +314,48 @@ class _HowItWorks extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Tap "Copy format for AI" and paste it into any chat tool along '
-              'with what you want to train. Save the JSON it gives back, then '
-              'choose it here. Nothing is added until you confirm the preview.',
+              'Tap "Copy progress for AI" and paste it into any chat tool along '
+              'with what you want to train next. Save the JSON it gives back, '
+              'then choose it here. Nothing is added until you confirm the '
+              'preview.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Explains what leaves the device, in the one place it can happen.
+///
+/// The app is otherwise entirely offline, so an export that a user pastes
+/// elsewhere deserves saying out loud rather than burying in a tooltip.
+class _ShareProgress extends StatelessWidget {
+  const _ShareProgress();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Your last 3 months', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            const Text(
+              'A plan written without your numbers is a guess. This gathers '
+              'the last 3 months of completed workouts — what you lifted and '
+              'ran, your best sets, and your personal records — so the plan '
+              'starts where you actually are.',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Copying or saving it is the only time your training leaves this '
+              'device, and only you decide where it goes.',
+              style: theme.textTheme.bodySmall,
             ),
           ],
         ),

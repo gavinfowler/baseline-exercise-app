@@ -36,6 +36,7 @@ class _ExercisePickerState extends ConsumerState<_ExercisePicker> {
     final catalog = ref.watch(
       exerciseCatalogProvider((
         type: widget.type,
+        cardioActivity: null,
         muscleGroup: null,
         equipment: null,
         includeArchived: false,

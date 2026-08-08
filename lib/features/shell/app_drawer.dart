@@ -16,11 +16,11 @@ class AppDrawer extends ConsumerWidget {
   ///
   /// The `Divider` below is not a destination, so it does not occupy an index:
   /// `NavigationDrawer` numbers only its `NavigationDrawerDestination`
-  /// children. Settings is 4 despite being the sixth child.
+  /// children. Settings is 5 despite being the seventh child.
   static const _destinations = [
     (
-      icon: Icon(Icons.fitness_center_outlined),
-      selected: Icon(Icons.fitness_center),
+      icon: Icon(Icons.play_circle_outline),
+      selected: Icon(Icons.play_circle),
       label: 'Workout',
     ),
     (
@@ -29,9 +29,14 @@ class AppDrawer extends ConsumerWidget {
       label: 'Plans',
     ),
     (
-      icon: Icon(Icons.list_alt_outlined),
-      selected: Icon(Icons.list_alt),
-      label: 'Exercises',
+      icon: Icon(Icons.fitness_center_outlined),
+      selected: Icon(Icons.fitness_center),
+      label: 'Strength',
+    ),
+    (
+      icon: Icon(Icons.directions_run_outlined),
+      selected: Icon(Icons.directions_run),
+      label: 'Cardio',
     ),
     (
       icon: Icon(Icons.history_outlined),
@@ -67,7 +72,7 @@ class AppDrawer extends ConsumerWidget {
             ],
           ),
         ),
-        for (final destination in _destinations.take(4))
+        for (final destination in _destinations.take(_destinations.length - 1))
           NavigationDrawerDestination(
             icon: destination.icon,
             selectedIcon: destination.selected,

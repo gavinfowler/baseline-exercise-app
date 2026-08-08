@@ -53,7 +53,8 @@ void main() {
     for (final label in [
       'Workout',
       'Plans',
-      'Exercises',
+      'Strength',
+      'Cardio',
       'History',
       'Settings',
     ]) {
@@ -73,7 +74,7 @@ void main() {
   ) async {
     await pumpDrawer(tester);
 
-    await tester.tap(find.text('Exercises'));
+    await tester.tap(find.text('Strength'));
     await tester.pumpAndSettle();
 
     expect(selected(), 2);
@@ -89,16 +90,17 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
-    expect(selected(), 4);
+    expect(selected(), 5);
   });
 
   testWidgets('each destination maps to its own index', (tester) async {
     const expected = {
       'Workout': 0,
       'Plans': 1,
-      'Exercises': 2,
-      'History': 3,
-      'Settings': 4,
+      'Strength': 2,
+      'Cardio': 3,
+      'History': 4,
+      'Settings': 5,
     };
 
     for (final entry in expected.entries) {

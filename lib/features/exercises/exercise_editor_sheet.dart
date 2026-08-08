@@ -8,10 +8,15 @@ import '../../domain/models/enums.dart';
 import 'vocabulary_field.dart';
 
 /// Creates a new exercise, or edits an existing one when [existing] is given.
+///
+/// [initialType] preselects the type for a new exercise, so adding one from the
+/// cardio catalog does not start out as a strength movement. It is ignored when
+/// editing — the existing row already says what it is.
 Future<void> showExerciseEditor(
   BuildContext context,
   WidgetRef ref, {
   ExerciseRow? existing,
+  ExerciseType initialType = ExerciseType.strength,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -20,15 +25,16 @@ Future<void> showExerciseEditor(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: _ExerciseEditor(existing: existing),
+      child: _ExerciseEditor(existing: existing, initialType: initialType),
     ),
   );
 }
 
 class _ExerciseEditor extends ConsumerStatefulWidget {
-  const _ExerciseEditor({this.existing});
+  const _ExerciseEditor({required this.initialType, this.existing});
 
   final ExerciseRow? existing;
+  final ExerciseType initialType;
 
   @override
   ConsumerState<_ExerciseEditor> createState() => _ExerciseEditorState();
@@ -50,7 +56,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
     _name = TextEditingController(text: existing?.name ?? '');
     _muscleGroup = existing?.muscleGroup;
     _equipment = existing?.equipment;
-    _type = existing?.type ?? ExerciseType.strength;
+    _type = existing?.type ?? widget.initialType;
     _activity = existing?.cardioActivity ?? CardioActivity.run;
   }
 

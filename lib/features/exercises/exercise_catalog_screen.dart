@@ -7,9 +7,16 @@ import '../../domain/models/enums.dart';
 import '../shell/app_drawer.dart';
 import 'exercise_editor_sheet.dart';
 
-/// Browse, search, filter, add and archive exercises.
+/// Browse, search, filter, add and archive exercises of a single [type].
+///
+/// Strength and cardio get a destination each rather than one list with a type
+/// filter: the two have almost nothing in common to narrow by — a run has no
+/// muscle group, a bench press has no activity — so a shared screen could only
+/// ever offer the union and grey half of it out.
 class ExerciseCatalogScreen extends ConsumerStatefulWidget {
-  const ExerciseCatalogScreen({super.key});
+  const ExerciseCatalogScreen({required this.type, super.key});
+
+  final ExerciseType type;
 
   @override
   ConsumerState<ExerciseCatalogScreen> createState() =>
@@ -18,22 +25,25 @@ class ExerciseCatalogScreen extends ConsumerStatefulWidget {
 
 class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
   String _search = '';
-  ExerciseType? _type;
+  CardioActivity? _activity;
   String? _muscleGroup;
   String? _equipment;
   bool _includeArchived = false;
 
+  bool get _isCardio => widget.type == ExerciseType.cardio;
+
   /// Everything except the name, which is matched in Dart against several
   /// fields at once and so cannot be pushed into the query.
   ExerciseFilter get _filter => (
-    type: _type,
+    type: widget.type,
+    cardioActivity: _activity,
     muscleGroup: _muscleGroup,
     equipment: _equipment,
     includeArchived: _includeArchived,
   );
 
   bool get _hasNarrowing =>
-      _type != null ||
+      _activity != null ||
       _muscleGroup != null ||
       _equipment != null ||
       _includeArchived ||
@@ -46,7 +56,7 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Exercises'),
+        title: Text(_isCardio ? 'Cardio' : 'Strength'),
         actions: [
           if (_hasNarrowing)
             TextButton(onPressed: _clearFilters, child: const Text('Clear')),
@@ -54,9 +64,11 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         // The shell keeps every tab mounted in an IndexedStack, so the tabs'
-        // buttons share one Hero subtree and cannot use the default tag.
-        heroTag: 'exercises-fab',
-        onPressed: () => showExerciseEditor(context, ref),
+        // buttons share one Hero subtree and cannot use the default tag. Both
+        // catalog screens are mounted at once, hence the type in the tag.
+        heroTag: 'exercises-fab-${widget.type.wireName}',
+        onPressed: () =>
+            showExerciseEditor(context, ref, initialType: widget.type),
         icon: const Icon(Icons.add),
         label: const Text('New'),
       ),
@@ -75,11 +87,12 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
             ),
           ),
           _FilterBar(
-            type: _type,
+            type: widget.type,
+            activity: _activity,
             muscleGroup: _muscleGroup,
             equipment: _equipment,
             includeArchived: _includeArchived,
-            onTypeChanged: (value) => setState(() => _type = value),
+            onActivityChanged: (value) => setState(() => _activity = value),
             onMuscleGroupChanged: (value) =>
                 setState(() => _muscleGroup = value),
             onEquipmentChanged: (value) => setState(() => _equipment = value),
@@ -100,7 +113,9 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
                       child: Text(
                         _hasNarrowing
                             ? 'Nothing matches these filters.'
-                            : 'No exercises yet.',
+                            : _isCardio
+                            ? 'No cardio exercises yet.'
+                            : 'No strength exercises yet.',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -122,7 +137,7 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
 
   void _clearFilters() => setState(() {
     _search = '';
-    _type = null;
+    _activity = null;
     _muscleGroup = null;
     _equipment = null;
     _includeArchived = false;
@@ -138,78 +153,77 @@ class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
   }
 }
 
+/// The narrowing controls, which differ by type: cardio narrows by activity,
+/// strength by muscle group. Equipment applies to both.
 class _FilterBar extends ConsumerWidget {
   const _FilterBar({
     required this.type,
+    required this.activity,
     required this.muscleGroup,
     required this.equipment,
     required this.includeArchived,
-    required this.onTypeChanged,
+    required this.onActivityChanged,
     required this.onMuscleGroupChanged,
     required this.onEquipmentChanged,
     required this.onArchivedChanged,
   });
 
-  final ExerciseType? type;
+  final ExerciseType type;
+  final CardioActivity? activity;
   final String? muscleGroup;
   final String? equipment;
   final bool includeArchived;
-  final ValueChanged<ExerciseType?> onTypeChanged;
+  final ValueChanged<CardioActivity?> onActivityChanged;
   final ValueChanged<String?> onMuscleGroupChanged;
   final ValueChanged<String?> onEquipmentChanged;
   final ValueChanged<bool> onArchivedChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final muscleGroups = ref.watch(usedMuscleGroupsProvider);
-    final equipmentOptions = ref.watch(usedEquipmentProvider);
+    final isCardio = type == ExerciseType.cardio;
+    final equipmentOptions = ref.watch(usedEquipmentProvider(type));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              for (final entry in <(String, ExerciseType?)>[
-                ('All', null),
-                ('Strength', ExerciseType.strength),
-                ('Cardio', ExerciseType.cardio),
-              ])
-                ChoiceChip(
-                  label: Text(entry.$1),
-                  selected: type == entry.$2,
-                  onSelected: (_) => onTypeChanged(entry.$2),
-                ),
-              const SizedBox(width: 4),
-              FilterChip(
-                avatar: const Icon(Icons.archive_outlined, size: 18),
-                label: const Text('Archived'),
-                selected: includeArchived,
-                onSelected: onArchivedChanged,
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilterChip(
+              avatar: const Icon(Icons.archive_outlined, size: 18),
+              label: const Text('Archived'),
+              selected: includeArchived,
+              onSelected: onArchivedChanged,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: _FilterDropdown(
-                  label: 'Muscle group',
-                  value: muscleGroup,
-                  options: muscleGroups,
-                  onChanged: onMuscleGroupChanged,
-                ),
+                child: isCardio
+                    ? _FilterDropdown<CardioActivity>(
+                        label: 'Activity',
+                        value: activity,
+                        options: ref.watch(usedCardioActivitiesProvider),
+                        labelOf: (a) => a.label,
+                        onChanged: onActivityChanged,
+                      )
+                    : _FilterDropdown<String>(
+                        label: 'Muscle group',
+                        value: muscleGroup,
+                        options: ref.watch(usedMuscleGroupsProvider(type)),
+                        labelOf: (value) => value,
+                        onChanged: onMuscleGroupChanged,
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _FilterDropdown(
+                child: _FilterDropdown<String>(
                   label: 'Equipment',
                   value: equipment,
                   options: equipmentOptions,
+                  labelOf: (value) => value,
                   onChanged: onEquipmentChanged,
                 ),
               ),
@@ -225,18 +239,20 @@ class _FilterBar extends ConsumerWidget {
 ///
 /// Options come from the catalog rather than the standard vocabulary, so the
 /// filter can never offer a choice that returns an empty list.
-class _FilterDropdown extends StatelessWidget {
+class _FilterDropdown<T extends Object> extends StatelessWidget {
   const _FilterDropdown({
     required this.label,
     required this.value,
     required this.options,
+    required this.labelOf,
     required this.onChanged,
   });
 
   final String label;
-  final String? value;
-  final List<String> options;
-  final ValueChanged<String?> onChanged;
+  final T? value;
+  final List<T> options;
+  final String Function(T) labelOf;
+  final ValueChanged<T?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +260,7 @@ class _FilterDropdown extends StatelessWidget {
     // exercise can remove "Barbell" from the options while it is still chosen.
     final selected = options.contains(value) ? value : null;
 
-    return DropdownButtonFormField<String?>(
+    return DropdownButtonFormField<T?>(
       initialValue: selected,
       isExpanded: true,
       decoration: InputDecoration(
@@ -255,7 +271,7 @@ class _FilterDropdown extends StatelessWidget {
       items: [
         const DropdownMenuItem(child: Text('Any')),
         for (final option in options)
-          DropdownMenuItem(value: option, child: Text(option)),
+          DropdownMenuItem(value: option, child: Text(labelOf(option))),
       ],
       onChanged: options.isEmpty ? null : onChanged,
     );

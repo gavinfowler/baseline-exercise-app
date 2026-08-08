@@ -19,6 +19,7 @@ import '../domain/models/enums.dart';
 import '../domain/models/vocabulary.dart';
 import '../domain/plan_import/plan_importer.dart';
 import '../domain/planning/planned_session_service.dart';
+import '../domain/progress_export/progress_export_service.dart';
 import '../domain/progression/progression_service.dart';
 
 /// Which top-level destination the shell is showing.
@@ -230,6 +231,16 @@ final backupServiceProvider = Provider<BackupService>((ref) {
   );
 });
 
+/// Summarises recent training for an AI to plan against. Unlike the backup,
+/// this is a lossy, shareable digest rather than a restorable copy.
+final progressExportServiceProvider = Provider<ProgressExportService>((ref) {
+  return ProgressExportService(
+    db: ref.watch(databaseProvider),
+    settings: ref.watch(settingsRepositoryProvider),
+    clock: ref.watch(clockProvider),
+  );
+});
+
 // --------------------------------------------------------------- catalog
 
 /// What the catalog screen and the exercise picker are currently narrowed to.
@@ -238,6 +249,7 @@ final backupServiceProvider = Provider<BackupService>((ref) {
 /// for free — two identical filters share one subscription.
 typedef ExerciseFilter = ({
   ExerciseType? type,
+  CardioActivity? cardioActivity,
   String? muscleGroup,
   String? equipment,
   bool includeArchived,
@@ -246,6 +258,7 @@ typedef ExerciseFilter = ({
 /// The unfiltered catalog: active exercises of every type.
 const ExerciseFilter noExerciseFilter = (
   type: null,
+  cardioActivity: null,
   muscleGroup: null,
   equipment: null,
   includeArchived: false,
@@ -258,6 +271,7 @@ final exerciseCatalogProvider =
           .watch(exerciseRepositoryProvider)
           .watchAll(
             type: filter.type,
+            cardioActivity: filter.cardioActivity,
             muscleGroup: filter.muscleGroup,
             equipment: filter.equipment,
             includeArchived: filter.includeArchived,
@@ -278,15 +292,45 @@ final equipmentOptionsProvider = Provider<List<String>>((ref) {
 
 /// Only the values actually present in the catalog, for the filter dropdowns —
 /// offering a filter that can only ever return nothing is a dead end.
-final usedMuscleGroupsProvider = Provider<List<String>>((ref) {
-  final rows = ref.watch(allExercisesProvider).value ?? const <ExerciseRow>[];
-  return mergeVocabulary(const [], rows.map((e) => e.muscleGroup));
+///
+/// Keyed by exercise type because the catalog is browsed one type at a time:
+/// the strength screen must not offer "Treadmill", and vice versa. A null key
+/// means every type.
+final usedMuscleGroupsProvider = Provider.family<List<String>, ExerciseType?>((
+  ref,
+  type,
+) {
+  return mergeVocabulary(
+    const [],
+    _catalogOfType(ref, type).map((e) => e.muscleGroup),
+  );
 });
 
-final usedEquipmentProvider = Provider<List<String>>((ref) {
-  final rows = ref.watch(allExercisesProvider).value ?? const <ExerciseRow>[];
-  return mergeVocabulary(const [], rows.map((e) => e.equipment));
+final usedEquipmentProvider = Provider.family<List<String>, ExerciseType?>((
+  ref,
+  type,
+) {
+  return mergeVocabulary(
+    const [],
+    _catalogOfType(ref, type).map((e) => e.equipment),
+  );
 });
+
+/// The cardio activities the catalog actually uses, for the cardio filter.
+final usedCardioActivitiesProvider = Provider<List<CardioActivity>>((ref) {
+  final used = _catalogOfType(
+    ref,
+    ExerciseType.cardio,
+  ).map((e) => e.cardioActivity).nonNulls.toSet();
+  // Ordered by the enum rather than by first appearance, so the dropdown is
+  // stable as the catalog changes.
+  return CardioActivity.values.where(used.contains).toList();
+});
+
+Iterable<ExerciseRow> _catalogOfType(Ref ref, ExerciseType? type) {
+  final rows = ref.watch(allExercisesProvider).value ?? const <ExerciseRow>[];
+  return type == null ? rows : rows.where((e) => e.type == type);
+}
 
 // --------------------------------------------------------------- sessions
 
