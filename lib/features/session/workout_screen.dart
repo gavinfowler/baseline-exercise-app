@@ -162,30 +162,55 @@ class _NoActiveSession extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    // Null while it loads, which is the same as "nothing planned" as far as
+    // this screen is concerned: the empty-session button is always offered, so
+    // there is nothing to wait for.
+    final planned = ref.watch(nextPlannedWorkoutProvider).value;
+
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const BaselineLogo(size: 72),
             const SizedBox(height: 16),
-            Text(
-              'No workout in progress',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('No workout in progress', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            const Text(
-              'Start an empty session and add exercises as you go.',
+            Text(
+              planned == null
+                  ? 'Start an empty session and add exercises as you go.'
+                  : 'Up next in ${planned.plan.name}.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () =>
-                  ref.read(sessionRepositoryProvider).startSession(),
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start workout'),
-            ),
+
+            if (planned == null)
+              FilledButton.icon(
+                onPressed: () =>
+                    ref.read(sessionRepositoryProvider).startSession(),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Start workout'),
+              )
+            else ...[
+              // The planned workout is the primary action and the empty one
+              // steps down to a text button: with a plan active, starting from
+              // it is the normal thing to do.
+              FilledButton.icon(
+                onPressed: () => ref
+                    .read(plannedSessionServiceProvider)
+                    .start(plan: planned.plan, day: planned.day),
+                icon: const Icon(Icons.play_arrow),
+                label: Text('Start ${planned.day.label}'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () =>
+                    ref.read(sessionRepositoryProvider).startSession(),
+                child: const Text('Start an empty session instead'),
+              ),
+            ],
           ],
         ),
       ),

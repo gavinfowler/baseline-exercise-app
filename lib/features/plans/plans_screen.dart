@@ -284,9 +284,16 @@ class _PlanTile extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (plan.isActive)
-              const Chip(
-                label: Text('Active'),
+              // An InputChip rather than a plain one so the state can be undone
+              // where it was set. A bare Chip left activating a plan with no way
+              // back short of activating a different one or deleting it.
+              InputChip(
+                label: const Text('Active'),
                 visualDensity: VisualDensity.compact,
+                onDeleted: () =>
+                    ref.read(planRepositoryProvider).setActivePlan(null),
+                deleteIcon: const Icon(Icons.close, size: 18),
+                deleteButtonTooltipMessage: 'Deactivate',
               )
             else
               TextButton(

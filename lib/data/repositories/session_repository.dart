@@ -121,6 +121,24 @@ class SessionRepository {
         .write(SessionsCompanion(notes: Value(notes)));
   }
 
+  /// The last workout completed from this plan, used to work out which one
+  /// comes next.
+  ///
+  /// Sessions with no `planDayId` are ignored: an ad-hoc workout logged against
+  /// the plan says nothing about where the rotation got to.
+  Future<SessionRow?> lastCompletedForPlan(int planId) {
+    return (_db.select(_db.sessions)
+          ..where(
+            (t) =>
+                t.planId.equals(planId) &
+                t.planDayId.isNotNull() &
+                t.status.equalsValue(SessionStatus.completed),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
   /// Completed sessions, newest first.
   Stream<List<SessionRow>> watchHistory({int limit = 100}) {
     return (_db.select(_db.sessions)

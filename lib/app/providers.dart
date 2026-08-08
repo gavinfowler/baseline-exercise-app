@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,6 +18,7 @@ import '../domain/backup/backup_service.dart';
 import '../domain/models/enums.dart';
 import '../domain/models/vocabulary.dart';
 import '../domain/plan_import/plan_importer.dart';
+import '../domain/planning/planned_session_service.dart';
 import '../domain/progression/progression_service.dart';
 
 /// Which top-level destination the shell is showing.
@@ -99,10 +101,46 @@ final progressionServiceProvider = Provider<ProgressionService>((ref) {
   );
 });
 
+/// Starts a workout from a plan, with its prescription already laid out.
+final plannedSessionServiceProvider = Provider<PlannedSessionService>((ref) {
+  return PlannedSessionService(
+    plans: ref.watch(planRepositoryProvider),
+    sessions: ref.watch(sessionRepositoryProvider),
+    baselines: ref.watch(baselineRepositoryProvider),
+    exercises: ref.watch(exerciseRepositoryProvider),
+    clock: ref.watch(clockProvider),
+  );
+});
+
 /// Every plan, active one first.
 final planListProvider = StreamProvider<List<PlanRow>>((ref) {
   return ref.watch(planRepositoryProvider).watchAll();
 });
+
+/// The active plan, or null when none is active.
+final activePlanProvider = Provider<AsyncValue<PlanRow?>>((ref) {
+  return ref
+      .watch(planListProvider)
+      .whenData((plans) => plans.firstWhereOrNull((p) => p.isActive));
+});
+
+/// The workout the active plan says to do next.
+///
+/// Null when nothing is active or the active plan has no workouts yet, which is
+/// how the workout screen decides whether to offer it. Watches the plan list and
+/// the active session so finishing a workout advances the rotation.
+final nextPlannedWorkoutProvider =
+    FutureProvider<({PlanRow plan, PlanDayRow day})?>((ref) async {
+      final plan = ref.watch(activePlanProvider).value;
+      if (plan == null) return null;
+
+      // Rebuilds when a session ends, which is what moves the rotation on.
+      ref.watch(activeSessionProvider);
+      ref.watch(planEditRevisionProvider);
+
+      final day = await ref.watch(plannedSessionServiceProvider).nextDay(plan);
+      return day == null ? null : (plan: plan, day: day);
+    });
 
 /// Days belonging to a plan, live so the editor updates as they are added.
 final planDaysProvider = StreamProvider.family<List<PlanDayRow>, int>((

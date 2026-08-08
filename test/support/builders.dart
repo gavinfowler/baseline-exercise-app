@@ -56,6 +56,7 @@ Future<int> insertPlanDay(
   String label = 'Day 1',
   int orderIndex = 0,
   int? weekNumber,
+  Weekday? dayOfWeek,
 }) {
   return db
       .into(db.planDays)
@@ -65,6 +66,7 @@ Future<int> insertPlanDay(
           orderIndex: orderIndex,
           label: label,
           weekNumber: Value(weekNumber),
+          dayOfWeek: Value(dayOfWeek),
         ),
       );
 }
@@ -76,6 +78,7 @@ Future<int> insertPlanBlock(
   int orderIndex = 0,
   int rounds = 3,
   int restAfterRoundSeconds = 90,
+  String? label,
 }) {
   return db
       .into(db.planBlocks)
@@ -86,6 +89,7 @@ Future<int> insertPlanBlock(
           kind: kind,
           rounds: Value(rounds),
           restAfterRoundSeconds: Value(restAfterRoundSeconds),
+          label: Value(label),
         ),
       );
 }
@@ -98,6 +102,11 @@ Future<int> insertPlanItem(
   int? targetReps = 8,
   double? targetWeightKg = 60,
   WeightMode weightMode = WeightMode.baseline,
+  double? weightPercent,
+  double? weightOffsetKg,
+  int? targetDurationSeconds,
+  double? targetDistanceMeters,
+  double? targetPaceSecPerKm,
 }) {
   return db
       .into(db.planItems)
@@ -109,6 +118,11 @@ Future<int> insertPlanItem(
           targetReps: Value(targetReps),
           targetWeightKg: Value(targetWeightKg),
           weightMode: Value(weightMode),
+          weightPercent: Value(weightPercent),
+          weightOffsetKg: Value(weightOffsetKg),
+          targetDurationSeconds: Value(targetDurationSeconds),
+          targetDistanceMeters: Value(targetDistanceMeters),
+          targetPaceSecPerKm: Value(targetPaceSecPerKm),
         ),
       );
 }
