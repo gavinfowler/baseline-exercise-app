@@ -62,3 +62,10 @@ key.properties
 # committing a 3 MB file that `dart run tool/seed_data.dart` recreates would
 # just make every regeneration a large, unreadable diff.
 /tool/seed/
+
+# Claude Code. Only the local parts: settings.local.json is one developer's
+# permission allowlist and the screenshots are scratch output. A shared
+# .claude/settings.json is meant to be committed, so the directory itself
+# stays visible to git.
+.claude/settings.local.json
+.claude/screenshots/
