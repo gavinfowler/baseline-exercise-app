@@ -4,6 +4,7 @@ import '../../core/units/pace.dart';
 import '../../core/units/unit_system.dart';
 import '../../domain/models/run_segment.dart';
 import 'cardio_triple_fields.dart';
+import 'save_bar.dart';
 
 /// Builds a structured cardio workout — fartlek, interval repeats, tempo, or
 /// any mix of them — as an ordered list of segments with their own paces.
@@ -54,17 +55,9 @@ class _RunBuilderScreenState extends State<RunBuilderScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Structured workout'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(_workout),
-              child: const Text('Save'),
-            ),
-          ),
-        ],
+      appBar: AppBar(title: const Text('Structured workout')),
+      bottomNavigationBar: SaveBar(
+        onSave: () => Navigator.of(context).pop(_workout),
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'run-builder-fab',
@@ -180,24 +173,33 @@ class _TotalsBar extends StatelessWidget {
       color: theme.colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        // Each third takes an equal share rather than its natural width: at
+        // their longest ("1:04:30", "12.43 km", "4:15 /km") the three together
+        // overflow a narrow phone, and an overflowing Row silently clips in a
+        // release build.
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _Total(
-              label: 'Total time',
-              value: duration == null
-                  ? '—'
-                  : UnitFormatter.formatDuration(duration),
+            Expanded(
+              child: _Total(
+                label: 'Total time',
+                value: duration == null
+                    ? '—'
+                    : UnitFormatter.formatDuration(duration),
+              ),
             ),
-            _Total(
-              label: 'Distance',
-              value: distance == null
-                  ? '—'
-                  : formatter.formatDistance(distance),
+            Expanded(
+              child: _Total(
+                label: 'Distance',
+                value: distance == null
+                    ? '—'
+                    : formatter.formatDistance(distance),
+              ),
             ),
-            _Total(
-              label: 'Avg pace',
-              value: pace == null ? '—' : formatter.formatPace(pace),
+            Expanded(
+              child: _Total(
+                label: 'Avg pace',
+                value: pace == null ? '—' : formatter.formatPace(pace),
+              ),
             ),
           ],
         ),
@@ -217,8 +219,18 @@ class _Total extends StatelessWidget {
     final theme = Theme.of(context);
     return Column(
       children: [
-        Text(value, style: theme.textTheme.titleMedium),
-        Text(label, style: theme.textTheme.bodySmall),
+        Text(
+          value,
+          style: theme.textTheme.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          label,
+          style: theme.textTheme.bodySmall,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

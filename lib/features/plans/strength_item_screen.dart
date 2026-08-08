@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/units/unit_system.dart';
 import '../../data/db/app_database.dart';
 import '../../domain/models/enums.dart';
+import 'save_bar.dart';
 
 /// A strength prescription entered in the plan editor, already in canonical
 /// units.
@@ -128,15 +129,8 @@ class _StrengthItemScreenState extends State<StrengthItemScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.exercise.name),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: FilledButton(onPressed: _submit, child: const Text('Save')),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.exercise.name)),
+      bottomNavigationBar: SaveBar(onSave: _submit),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [

@@ -9,6 +9,7 @@ import '../../domain/models/enums.dart';
 import '../../domain/models/run_segment.dart';
 import 'cardio_triple_fields.dart';
 import 'run_builder_screen.dart';
+import 'save_bar.dart';
 
 /// A cardio prescription entered in the plan editor, already in canonical units.
 ///
@@ -127,15 +128,8 @@ class _CardioItemScreenState extends State<CardioItemScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.exercise.name),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: FilledButton(onPressed: _submit, child: const Text('Save')),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.exercise.name)),
+      bottomNavigationBar: SaveBar(onSave: _submit),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
