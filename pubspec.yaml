@@ -3,7 +3,7 @@ name: exercise_app
 # identifier, which appears in imports only and is not worth a repo-wide churn.
 description: "Baseline — an offline tracker for cardio and strength training."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.10.4
