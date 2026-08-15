@@ -271,43 +271,59 @@ class _PlanTile extends ConsumerWidget {
       if (plan.source == PlanSource.imported) 'imported',
     ].join(' · ');
 
+    // The controls sit on their own row rather than in the tile's `trailing`.
+    // A chip and an icon button there claim their full intrinsic width, and
+    // ListTile gives it to them, leaving the name and the mode line to wrap
+    // inside whatever narrow column is left — on a phone that broke plan names
+    // across two lines and the mode line across three.
     return Card(
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      child: ListTile(
-        leading: Icon(isStatic ? Icons.trending_up : Icons.event_note),
-        title: Text(plan.name),
-        subtitle: Text(subtitle),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => PlanEditorScreen(plan: plan)),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (plan.isActive)
-              // An InputChip rather than a plain one so the state can be undone
-              // where it was set. A bare Chip left activating a plan with no way
-              // back short of activating a different one or deleting it.
-              InputChip(
-                label: const Text('Active'),
-                visualDensity: VisualDensity.compact,
-                onDeleted: () =>
-                    ref.read(planRepositoryProvider).setActivePlan(null),
-                deleteIcon: const Icon(Icons.close, size: 18),
-                deleteButtonTooltipMessage: 'Deactivate',
-              )
-            else
-              TextButton(
-                onPressed: () =>
-                    ref.read(planRepositoryProvider).setActivePlan(plan.id),
-                child: const Text('Activate'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: Icon(isStatic ? Icons.trending_up : Icons.event_note),
+            title: Text(plan.name),
+            subtitle: Text(subtitle),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => PlanEditorScreen(plan: plan),
               ),
-            IconButton(
-              tooltip: 'Delete',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => _confirmDelete(context, ref),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (plan.isActive)
+                  // An InputChip rather than a plain one so the state can be
+                  // undone where it was set. A bare Chip left activating a plan
+                  // with no way back short of activating a different one or
+                  // deleting it.
+                  InputChip(
+                    label: const Text('Active'),
+                    visualDensity: VisualDensity.compact,
+                    onDeleted: () =>
+                        ref.read(planRepositoryProvider).setActivePlan(null),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteButtonTooltipMessage: 'Deactivate',
+                  )
+                else
+                  TextButton(
+                    onPressed: () =>
+                        ref.read(planRepositoryProvider).setActivePlan(plan.id),
+                    child: const Text('Activate'),
+                  ),
+                IconButton(
+                  tooltip: 'Delete',
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => _confirmDelete(context, ref),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
