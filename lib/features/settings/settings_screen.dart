@@ -82,6 +82,12 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const _FlagTile(
                   label: 'Notification when the app is in the background',
+                  // The app schedules no exact alarm, so delivery is Android's
+                  // call. Saying so here is cheaper than a user concluding the
+                  // rest timer is unreliable.
+                  subtitle:
+                      'Delivered by Android, so it can arrive a little after '
+                      'the timer ends.',
                   settingKey: SettingsRepository.keyRestNotificationEnabled,
                 ),
 
@@ -365,10 +371,18 @@ class _OpenSourceCredits extends StatelessWidget {
 }
 
 class _FlagTile extends ConsumerWidget {
-  const _FlagTile({required this.label, required this.settingKey});
+  const _FlagTile({
+    required this.label,
+    required this.settingKey,
+    this.subtitle,
+  });
 
   final String label;
   final String settingKey;
+
+  /// A second line, for a flag whose behaviour is not fully described by its
+  /// label.
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -376,6 +390,7 @@ class _FlagTile extends ConsumerWidget {
 
     return SwitchListTile(
       title: Text(label),
+      subtitle: subtitle == null ? null : Text(subtitle!),
       value: value.value ?? true,
       onChanged: (enabled) => ref
           .read(settingsRepositoryProvider)
