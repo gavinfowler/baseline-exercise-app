@@ -166,8 +166,18 @@ Back up the keystore and its passwords. The upload key is the app's identity —
 losing it means asking Google to reset it before you can ship an update.
 
 **Store assets** in `assets/branding/`: `baseline-icon-512.png` is the 512x512
-listing icon, `feature-graphic-1024x500.png` the banner. Screenshots are easiest
-to capture from the Windows build at a phone aspect ratio.
+listing icon, `feature-graphic-1024x500.png` the banner.
+
+**Screenshots** are generated rather than captured by hand:
+
+```powershell
+flutter test tool/generate_screenshots.dart
+```
+
+It renders the real widget tree against `tool/seed/baseline-seed-full.json` and
+writes `store/screenshots/{phone,tablet-7in,tablet-10in}/`, in the three sizes
+Play asks for. Re-run it after any change to how a screen looks. The listing
+text that goes with them is in `store/play-listing.md`.
 
 **The privacy policy** lives in `docs/` as plain HTML, ready to serve from
 GitHub Pages (Settings, Pages, deploy from `main` and the `/docs` folder). Play
