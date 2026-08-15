@@ -171,8 +171,9 @@ to capture from the Windows build at a phone aspect ratio.
 
 **The privacy policy** lives in `docs/` as plain HTML, ready to serve from
 GitHub Pages (Settings, Pages, deploy from `main` and the `/docs` folder). Play
-requires a policy URL even for an app that collects nothing. One `TODO` is left
-in it: the contact address to publish.
+requires a policy URL even for an app that collects nothing. Pages will not
+serve it while the repository is private: publishing from a private repo needs a
+paid plan, so the repo has to be public for the URL to resolve.
 
 **Before the first upload**, two things need a decision rather than code:
 
