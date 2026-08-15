@@ -1,4 +1,4 @@
-package com.gavin.baseline
+package com.gavinfowler.baseline
 
 import io.flutter.embedding.android.FlutterActivity
 

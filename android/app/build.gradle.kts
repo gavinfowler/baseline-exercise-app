@@ -19,7 +19,7 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.gavin.baseline"
+    namespace = "com.gavinfowler.baseline"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -39,7 +39,7 @@ android {
     defaultConfig {
         // Permanent once the app is published: the Play Store keys an app's
         // identity on this and it can never be changed afterwards.
-        applicationId = "com.gavin.baseline"
+        applicationId = "com.gavinfowler.baseline"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
