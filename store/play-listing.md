@@ -51,7 +51,7 @@ PROGRESS
 
 PERMISSIONS
 
-Notifications, vibration and exact alarms, all so the rest timer lands on time, plus run-at-startup so a pending rest alert survives a reboot. Nothing else: no location, no camera, no microphone, no contacts.
+Notifications and vibration for the rest timer, plus run-at-startup so a pending rest alert survives a reboot. No alarm permission: the rest alert is scheduled the ordinary way, which the system may delay slightly while the app is in the background. Nothing else: no location, no camera, no microphone, no contacts.
 
 YOUR DATA
 

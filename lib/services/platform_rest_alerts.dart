@@ -83,7 +83,12 @@ class PlatformRestAlerts implements RestAlerts {
       scheduledDate: when,
       title: 'Rest complete',
       body: label == null ? 'Time for your next set.' : 'Next up: $label',
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      // Inexact, because the app declares no exact-alarm permission: see the
+      // note in AndroidManifest.xml. Asking for an exact alarm without it
+      // throws `exact_alarms_not_permitted` on Android 12+. The trade is that
+      // the system may batch this notification and deliver it late when the app
+      // is in the background.
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,

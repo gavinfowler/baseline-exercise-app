@@ -185,15 +185,18 @@ requires a policy URL even for an app that collects nothing. Pages will not
 serve it while the repository is private: publishing from a private repo needs a
 paid plan, so the repo has to be public for the URL to resolve.
 
-**Before the first upload**, two things need a decision rather than code:
+**No exact-alarm permission is declared.** That was a decision, not an
+oversight: `USE_EXACT_ALARM` is Play-restricted to apps whose core function is
+an alarm, timer or calendar, and from Android 14 `SCHEDULE_EXACT_ALARM` is
+denied by default outside those same categories, so declaring either buys a
+review argument and, for most users, no working exact alarm at the end of it.
+The background notification is scheduled inexactly and the system may deliver it
+late; the on-screen countdown is a Dart ticker and is exact regardless. Re-adding
+the permission means changing `androidScheduleMode` back in
+`lib/services/platform_rest_alerts.dart`.
 
-- **`USE_EXACT_ALARM` is Play-restricted** to apps whose core function is an
-  alarm, timer or calendar. The rest timer is a defensible case, but it needs a
-  declaration in the Console and may be challenged. The fallback is to drop it
-  and keep `SCHEDULE_EXACT_ALARM`, which the user grants from Settings; only
-  the background alert degrades.
-- **Bump the `+N` in `version:`** for every upload. Play rejects a versionCode
-  it has already accepted.
+**Before the first upload:** bump the `+N` in `version:` for every upload. Play
+rejects a versionCode it has already accepted.
 
 ## Project layout
 

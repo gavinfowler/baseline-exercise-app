@@ -3,11 +3,15 @@
          requests and declares no INTERNET permission. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <!-- The rest alert must land on time, not whenever the system next batches
-         work, so it is scheduled as an exact alarm. USE_EXACT_ALARM covers
-         Android 13+; SCHEDULE_EXACT_ALARM covers 12. -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- No exact-alarm permission, deliberately. Play restricts USE_EXACT_ALARM
+         to apps whose core function is an alarm, timer or calendar, and from
+         Android 14 SCHEDULE_EXACT_ALARM is denied by default outside those same
+         categories — so declaring either buys a review argument and, for most
+         users, no working exact alarm at the end of it. The background alert is
+         scheduled inexactly instead and the system may batch it; the on-screen
+         countdown is a Dart ticker and is unaffected. Re-adding these means
+         changing the schedule mode back in
+         lib/services/platform_rest_alerts.dart. -->
     <!-- Re-registers pending rest alerts after a reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
